@@ -1,0 +1,36 @@
+{
+   "CamaraApi" : {
+      "Security" : {
+         "jwtExpireInSeconds" : 864000
+      },
+      "Log" : {
+         "level": "debug",
+         "levels": {
+               "error": 0,
+               "warn": 1,
+               "info": 2,
+               "verbose": 3,
+               "debug": 4
+         },
+         "levelsColors": {
+               "error": "red",
+               "warn": "magenta",
+               "info": "blue",
+               "verbose": "green",
+               "debug": "yellow"
+         }
+      },
+
+      "Models" : {
+         "Db" : {
+            "useMock": false,
+            "dbURI": "mongodb://localhost/site-camara-dev"
+         },
+         "SampleDataGenerator" : {
+            "activated" : true,
+            "cleaningActivated" : true
+         }
+      }
+
+   }
+}

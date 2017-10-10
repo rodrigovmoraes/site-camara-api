@@ -1,0 +1,40 @@
+{
+  "name": "site-camara-api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "start-debug": "node --inspect-brk ./bin/www",
+    "test": "./node_modules/.bin/mocha --recursive --reporter spec",
+    "test-debug": "./node_modules/.bin/mocha --recursive --debug-brk"
+  },
+  "engines": {
+    "npm": "~1.3.2"
+  },
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "~1.8.1",
+    "chai": "^3.5.0",
+    "config": "^1.26.1",
+    "cookie-parser": "~1.3.3",
+    "cors": "^2.8.4",
+    "crypto": "0.0.3",
+    "debug": "~2.0.0",
+    "dotenv": "^1.2.0",
+    "express": "~4.9.0",
+    "express-jwt": "^5.3.0",
+    "hogan-express": "^0.5.2",
+    "jsonwebtoken": "^7.4.1",
+    "lodash": "^4.17.4",
+    "mocha": "^3.4.1",
+    "mockgoose": "^7.3.3",
+    "mongoose": "^4.11.3",
+    "mongoose-deep-populate": "^3.0.0",
+    "mongoose-type-email": "^1.0.5",
+    "node": "^8.3.0",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "request": "^2.81.0",
+    "winston": "^2.3.1"
+  }
+}
