@@ -12,7 +12,6 @@ var _unauthorizedErrorMessage = "You don't have permission to access the resourc
 //This should be done in order to improve error reporting,
 //if a function is not surronded by this handler in the async.series method,
 //the async will not be able to catch an error thrown by the function
-
 module.exports.handleErrorForAsync = function(fn, resultOnError) {
    if(resultOnError == undefined){
       resultOnError = false;
@@ -108,6 +107,16 @@ module.exports.randomDate = function(ys, ms, ds, ye, me, de) {
                        );
    rdate.setHours(0);
    rdate.setMinutes(0);
+   rdate.setSeconds(0);
+   rdate.setMilliseconds(0);
+   return rdate;
+};
+
+module.exports.randomDateAndTimeInMinutes = function(ys, ms, ds, ye, me, de) {
+   var rdate = new Date( module.exports.random( (new Date(ys,ms,ds)).getTime(),
+                                                (new Date(ye,me,de)).getTime()
+                                              )
+                       );
    rdate.setSeconds(0);
    rdate.setMilliseconds(0);
    return rdate;

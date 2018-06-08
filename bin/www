@@ -2,11 +2,39 @@
 /*****************************************************************************
 ********************** START APPLICATION SCRIPT ******************************
 /*****************************************************************************/
-var winston = require('winston')
-var app = require('../app');
+var winston = require('winston');
+var cluster = require('cluster');
+var config = require('config');
 
-app.set('port', process.env.PORT || 3000);
+/*****************************************************************************
+***************************** APP CONFIG SECTION *****************************
+******************************************************************************/
+var camaraApiConfig = config.get("CamaraApi")
+//log configuration
+winston.setLevels(camaraApiConfig.Log.levels);
+winston.addColors(camaraApiConfig.Log.levelsColors);
+winston.configure({
+    transports: [
+      new (winston.transports.Console)({ colorize: true })
+    ]
+ });
+winston.level = camaraApiConfig.Log.level;
 
-var server = app.listen(app.get('port'), '0.0.0.0', 512, function() {
-  winston.info('Express server listening on port %d', server.address().port);
-});
+if(cluster.isMaster) {
+   //HTTP SERVER START
+   var app = require('../app.js');
+   app.set('port', process.env.PORT || 3000);
+
+   var server = app.listen(app.get('port'), '0.0.0.0', 512, function() {
+     winston.info('Express server listening on port %d', server.address().port);
+   });
+
+   //config and start socket io server
+   var io = require('../socket-io.js')(server);
+
+   cluster.fork();
+} else {
+   //JOB PROCESSOR START
+   winston.info('Starting JOBs processor ...');
+   require('../jobs.js');
+}

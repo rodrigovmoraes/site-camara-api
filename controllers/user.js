@@ -4,8 +4,10 @@
 /*****************************************************************************/
 var winston = require('winston');
 var User = require('../models/User.js').getModel();
+var UserService = require('../services/UserService.js');
 var ServerGridUtils = require('../util/ServerGridUtils.js');
 var Utils = require('../util/Utils.js');
+var _ = require('lodash');
 
 /*****************************************************************************
 ******************************* PRIVATE **************************************
@@ -21,7 +23,7 @@ module.exports.getUsers = function(req, res, next) {
    var querySelectFields = [ { field: "primaryGroup", ref: "UserGroup", descriptionField: "completeName" } ];
 
    ServerGridUtils.getDataGrid(User, UserQuery, querySelectFields, req, res, next, function(data, count, selectFilters){
-      User.populate(data,  { path: 'primaryGroup', model: 'UserGroup' }).then(function(users){
+      User.populate(data,  { path: 'primaryGroup', model: 'UserGroup' }).then(function(users) {
          Utils.sendJSONresponse(res, 200, {
              "users" : data,
              "totalLength" : count,
@@ -31,7 +33,6 @@ module.exports.getUsers = function(req, res, next) {
          winston.error("Error while getting users, err = [%s]", err);
          Utils.next(400, err, next);
       });
-
    });
 }
 
@@ -124,7 +125,7 @@ module.exports.checkUniqueUsername = function(req, res, next) {
    var username = req.params.username;
    if(username) {
       User.count({'username' : username}).exec().then(function(result){
-         if(result > 0){
+         if(result > 0) {
                Utils.sendJSONresponse(res, 200, { exists: true });
          } else {
                Utils.sendJSONresponse(res, 200, { exists: false });
@@ -145,7 +146,53 @@ module.exports.checkUniqueEmail = function(req, res, next) {
                Utils.sendJSONresponse(res, 200, { exists: false });
          }
       });
-   }else{
+   } else {
       Utils.sendJSONresponse(res, 400, { message: 'undefined email' });
+   }
+}
+
+module.exports.getRolesFromUser = function(req, res, next) {
+   var userId = req.params.userId;
+   if(userId) {
+
+      User.findById(userId).then(function(user) {
+         if(user) {
+            UserService.getRolesFromUser(userId).then(function(roles) {
+               Utils.sendJSONresponse(res, 200, { 'roles':  roles });
+            }).catch(function(err) {
+               Utils.next(400, err, next);
+            });
+         } else {
+            Utils.sendJSONresponse(res, 400, { message: 'user not found' });
+         }
+
+      }).catch(function(err) {
+         Utils.next(400, err, next);
+      });
+
+   } else {
+      Utils.sendJSONresponse(res, 400, { message: 'user id undefined' });
+   }
+}
+
+module.exports.checkAccess = function(req, res, next) {
+   var role = req.params.roleName;
+   if(role) {
+      //check if the logged user has the role
+      User.findById(req.payload._id).then(function(user) {
+         if (user) {
+            if(user.extendedRoles) {
+               Utils.sendJSONresponse(res, 200, { 'ok':  _.indexOf(user.extendedRoles, role) >= 0 });
+            } else {
+               Utils.sendJSONresponse(res, 200, { 'ok':  false });
+            }
+         } else {
+            Utils.sendJSONresponse(res, 400, { message: 'user not found' });
+         }
+      }).catch(function(err) {
+         Utils.next(400, err, next);
+      });
+   } else {
+      Utils.sendJSONresponse(res, 400, { message: 'role undefined' });
    }
 }

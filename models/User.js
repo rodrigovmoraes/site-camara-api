@@ -40,6 +40,7 @@ var _createModelSchema = function(mongoose) {
                 ref: 'SecurityRole',
                 required: true
             }],
+     extendedRoles: [String],
      primaryGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
      secondaryGroups: [{ type: mongoose.Schema.Types.ObjectId,
                          ref: 'UserGroup',
@@ -49,17 +50,17 @@ var _createModelSchema = function(mongoose) {
      status: Boolean
    });
 
-   userSchema.methods.setPassword = function(password) {
+   userSchema.methods.setPassword = function (password) {
      this.salt = crypto.randomBytes(16).toString('hex');
      this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha1').toString('hex');
    };
 
-   userSchema.methods.validPassword = function(password) {
+   userSchema.methods.validPassword = function (password) {
      var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha1').toString('hex');
      return this.hash === hash;
    };
 
-   userSchema.methods.generateJwt = function() {
+   userSchema.methods.generateJwt = function () {
      var expiry = new Date();
      expiry.setTime(expiry.getTime() + _expireInSeconds * 1000);
 
@@ -67,14 +68,16 @@ var _createModelSchema = function(mongoose) {
        _id: this._id,
        email: this.email,
        name: this.name,
-       roles: this.roles,
        exp: parseInt(expiry.getTime() / 1000),
      }, process.env.JWT_SECRET); // DO NOT KEEP YOUR SECRET IN THE CODE!
    };
 
+   userSchema.methods.getAllRoles = function () {
+     return _getRolesFromUser(this._id);
+   };
+
    return userSchema;
 }
-
 
 /*****************************************************************************
 ******************************* PUBLIC ***************************************

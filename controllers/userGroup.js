@@ -41,9 +41,6 @@ module.exports.getUserGroups = function(req, res, next) {
 }
 
 module.exports.getUserGroupsTree = function(req, res, next) {
-   var db = UserGroup.db;
-   var mongoose = UserGroupModule.getMongoose();
-
    UserGroup.find({ isRoot: true }).populate("roles").exec().then(async function(rootGroups) {
       if(rootGroups) {
          var i;
@@ -75,7 +72,7 @@ module.exports.getUserGroupsTree = function(req, res, next) {
                         });
                      }
 
-                     if(child){
+                     if(child) {
                         nodeChildren.push(child);
                      }
                   }
@@ -176,7 +173,7 @@ module.exports.newUserGroup = function(req, res, next) {
 }
 
 //delete the user group and its children
-module.exports.deepDeleteUserGroup = function(req, res, next) {
+module.exports.deleteDeeplyUserGroup = function(req, res, next) {
 
    var collectAndExecuteDeletes = async function(userGroup) {
       var toBeVisited = [];
@@ -227,8 +224,8 @@ module.exports.deepDeleteUserGroup = function(req, res, next) {
          //execute a breadth first search collecting the updates in the tree
          return collectAndExecuteDeletes(userGroup);
       }).then(function(result) {
-         winston.verbose("User group saved");
-         Utils.sendJSONresponse(res, 200, { message: 'User group saved' });
+         winston.verbose("User group deleted");
+         Utils.sendJSONresponse(res, 200, { message: 'User group deleted' });
       }).catch(function(err) {
          winston.error("Error while deleting the user group, err = [%s]", err);
          Utils.next(400, err, next);

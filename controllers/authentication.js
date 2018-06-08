@@ -8,6 +8,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var Util = require('../util/Utils.js');
 var winston = require('winston');
 var messages = require('../services/messages.js');
+var UserService = require('../services/UserService.js');
 
 /*****************************************************************************
 ******************************* PRIVATE **************************************
@@ -71,6 +72,16 @@ module.exports.loginController = function(req, res) {
       //generate the jwt token and give it to the client
       token = user.generateJwt();
       Util.sendJSONresponse(res, 200, { "token" : token });
+      //save calculated roles for future security queries
+      UserService.getRolesFromUser(user._id).then(function(roles) {
+         user.extendedRoles = roles;
+         user.save().catch(function(err) {
+            winston.error("Server error while saving roles of the user for future security queries: " + err.message);
+         });
+      }).catch(function(err) {
+         winston.error("Server error while getting roles of the user for future security queries: " + err.message);
+      });
+
     } else {
       //invalid credentials
       Util.sendJSONresponse(res, 401, info);

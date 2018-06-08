@@ -4,7 +4,9 @@
 /*****************************************************************************/
 var jwt = require('express-jwt');
 var _ = require('lodash');
-var Util = require('../util/Utils.js')
+var Util = require('../util/Utils.js');
+var winston = require('winston');
+var User = require('../models/User.js').getModel();
 
 /*****************************************************************************
 ******************************* PRIVATE **************************************
@@ -15,18 +17,34 @@ var _auth = jwt({
 });
 
 var _hasRole = function(req, res, next, roleName) {
-   //check if the logged user has the role
-   if(req.payload.roles && _.find(req.payload.roles, _.curry(_.eq)(roleName) )) {
-      next(); //ok - pass to the next middleware
-   }else {
+   var _accessError = function(prmNext) {
       var err = Util.newUnauthorizedError();
-      next(err); //security error request
+      prmNext(err); //security error request
    }
+   //check if the logged user has the role
+   User.findById(req.payload._id).then(function(user) {
+      if (user) {
+         if(user.extendedRoles) {
+            if(_.indexOf(user.extendedRoles, roleName) >= 0) {
+               next();
+            } else {
+               _accessError(next);
+            }
+         } else {
+            _accessError(next);
+         }
+      } else {
+         _accessError(next);
+      }
+   }).catch(function(err) {
+      winston.error("Server error during role checking process: " + err.message);
+      _accessError(next);
+   });
 }
 /*****************************************************************************
 ******************************* PUBLIC ***************************************
 *****************************************************************************/
-module.exports.isLoged = function() {
+module.exports.isLogged = function() {
    return _auth;
 }
 
