@@ -28,6 +28,13 @@ var bannersControllers = require('../controllers/banners.js');
 var hotNewsControllers = require('../controllers/hotNews.js');
 var breakingNewsControllers = require('../controllers/breakingNews.js');
 var fbreakingNewsControllers = require('../controllers/fbreakingNews.js');
+var eventsCalendarControllers = require('../controllers/eventsCalendar.js');
+var licitacoesControllers = require('../controllers/licitacoes.js');
+var licitacoesCategoriesControllers = require('../controllers/licitacoesCategories.js');
+var legislativePropositionsControllers = require('../controllers/legislativePropositions.js');
+var legislativePropositionTypesControllers = require('../controllers/legislativePropositionTypes.js');
+var legislativePropositionTagsControllers = require('../controllers/legislativePropositionTags.js');
+var legislativePropositionRelationshipTypesControllers = require('../controllers/legislativePropositionRelationshipTypes.js');
 
 var testController = require('../controllers/test.js');
 
@@ -84,6 +91,9 @@ router.get('/newsItem/:newsItemId', newsControllers.getNewsItem);
 router.get('/incrementNewsViews/:newsItemId', newsControllers.getIncrementNewsViews);
 router.post('/newsItem', newsControllers.editNewsItem);
 router.put('/newsItem', newsControllers.newNewsItem);
+router.put('/newsItem/wysiwyg/fileAttachment', newsControllers.uploadWysiwygFileAttachment);
+router.put('/newsItem/wysiwyg/fileImageAttachment', newsControllers.uploadWysiwygFileImageAttachment);
+router.put('/newsItem/wysiwyg/fileVideoAttachment', newsControllers.uploadWysiwygFileVideoAttachment);
 router.put('/newsItem/thumbnail/:uuid', newsControllers.uploadThumbnail);
 router.delete('/newsItem/thumbnail/:fileName', newsControllers.deleteThumbnail);
 router.delete('/newsItem/:newsItemId', newsControllers.removeNewsItem);
@@ -94,6 +104,9 @@ router.get('/page/:pageId', pagesControllers.getPage);
 router.get('/incrementPageViews/:pageId', pagesControllers.getIncrementPageViews);
 router.post('/page', pagesControllers.editPage);
 router.put('/page', pagesControllers.newPage);
+router.put('/page/wysiwyg/fileAttachment', pagesControllers.uploadWysiwygFileAttachment);
+router.put('/page/wysiwyg/fileImageAttachment', pagesControllers.uploadWysiwygFileImageAttachment);
+router.put('/page/wysiwyg/fileVideoAttachment', pagesControllers.uploadWysiwygFileVideoAttachment);
 router.delete('/page/:pageId', pagesControllers.removePage);
 
 //banners
@@ -134,6 +147,70 @@ router.delete('/fbreakingNews/image/:fileName', fbreakingNewsControllers.deleteF
 router.get('/fbreakingNews/:fbreakingNewsItemId', fbreakingNewsControllers.getFBreakingNewsItem);
 router.get('/fbreakingNews', fbreakingNewsControllers.getFBreakingNewsItems);
 router.delete('/fbreakingNews/:fbreakingNewsItemId', fbreakingNewsControllers.removeFBreakingNewsItem);
+
+//licitacoes
+router.get('/licitacoes', licitacoesControllers.getLicitacoes);
+router.post('/licitacao', licitacoesControllers.editLicitacao);
+router.put('/licitacao', licitacoesControllers.newLicitacao);
+router.delete('/licitacao/event/file/:fileName', licitacoesControllers.deleteEventFile);
+router.delete('/licitacao/event/:licitacaoId/:eventId', licitacoesControllers.removeLicitacaoEvent);
+router.delete('/licitacao/:licitacaoId', licitacoesControllers.removeLicitacao);
+router.get('/licitacao/publish/:licitacaoId', licitacoesControllers.publishLicitacao);
+router.get('/licitacao/unpublish/:licitacaoId', licitacoesControllers.unpublishLicitacao);
+router.get('/licitacao/checkUniqueNumber/:year/:number', licitacoesControllers.checkUniqueNumber);
+router.get('/licitacao/nextNumber/:year', licitacoesControllers.getNextNumberOfTheYear);
+router.get('/licitacao/event/download/:eventId', licitacoesControllers.downloadEventFile);
+router.get('/licitacao/event/raw/download/:fileName', licitacoesControllers.rawDownloadEventFile);
+router.get('/licitacao/events/last', licitacoesControllers.getLastLicitacoesEvents);
+router.get('/licitacao/event/:eventId', licitacoesControllers.getLicitacaoEvent);
+router.get('/licitacao/:licitacaoId', licitacoesControllers.getLicitacao);
+router.put('/licitacao/event/file/:uuid', licitacoesControllers.uploadEventFile);
+router.put('/licitacao/event/:licitacaoId', licitacoesControllers.newLicitacaoEvent);
+router.post('/licitacao/event', licitacoesControllers.editLicitacaoEvent);
+//licitacoes categories
+router.get('/licitacoesCategories', licitacoesCategoriesControllers.getLicitacoesCategories);
+
+//legislative propositions
+router.get('/legislativePropositions', legislativePropositionsControllers.getLegislativePropositions);
+router.post('/legislativeProposition', isLogged(), legislativePropositionsControllers.editLegislativeProposition);
+
+router.put('/legislativeProposition/wysiwyg/textFileAttachment', legislativePropositionsControllers.uploadWysiwygTextFileAttachment);
+router.put('/legislativeProposition/wysiwyg/textFileImageAttachment', legislativePropositionsControllers.uploadWysiwygTextFileImageAttachment);
+router.put('/legislativeProposition/wysiwyg/textAttachmentFileAttachment', legislativePropositionsControllers.uploadWysiwygTextAttachmentFileAttachment);
+router.put('/legislativeProposition/wysiwyg/textAttachmentFileImageAttachment', legislativePropositionsControllers.uploadWysiwygTextAttachmentFileImageAttachment);
+router.put('/legislativeProposition/wysiwyg/consolidatedTextFileAttachment', legislativePropositionsControllers.uploadWysiwygConsolidatedTextFileAttachment);
+router.put('/legislativeProposition/wysiwyg/consolidatedTextFileImageAttachment', legislativePropositionsControllers.uploadWysiwygConsolidatedTextFileImageAttachment);
+router.put('/legislativeProposition/wysiwyg/consolidatedTextAttachmentFileAttachment', legislativePropositionsControllers.uploadWysiwygConsolidatedTextAttachmentFileAttachment);
+router.put('/legislativeProposition/wysiwyg/consolidatedTextAttachmentFileImageAttachment', legislativePropositionsControllers.uploadWysiwygConsolidatedTextAttachmentFileImageAttachment);
+
+router.put('/legislativeProposition/attachment/file/:uuid', legislativePropositionsControllers.uploadAttachmentFile);
+router.put('/legislativeProposition/consolidatedAttachment/file/:uuid', legislativePropositionsControllers.uploadConsolidatedAttachmentFile);
+router.put('/legislativeProposition/attachment', legislativePropositionsControllers.newAttachmentFile);
+router.put('/legislativeProposition', isLogged(), legislativePropositionsControllers.newLegislativeProposition);
+router.delete('/legislativeProposition/attachment/:legislativePropositionFileAttachmentId', legislativePropositionsControllers.deleteFileAttachment);
+router.delete('/legislativeProposition/:legislativePropositionId', isLogged(), legislativePropositionsControllers.removeLegislativeProposition);
+router.get('/legislativeProposition/byNumber/:legislativePropositionTypeId/:number', legislativePropositionsControllers.getLegislativePropositionByNumber);
+router.get('/legislativeProposition/checkUniqueNumber/:legislativePropositionTypeId/:number', legislativePropositionsControllers.checkUniqueNumber);
+router.get('/legislativeProposition/nextNumber/:legislativePropositionTypeId', legislativePropositionsControllers.getNextNumberOfTheType);
+router.get('/legislativeProposition/attachment/download/:legislativePropositionFileAttachmentId', legislativePropositionsControllers.downloadLegislativePropositionFileAttachment);
+router.get('/legislativeProposition/:legislativePropositionId', legislativePropositionsControllers.getLegislativeProposition);
+//legislative proposition types
+router.get('/legislativePropositionTypes', legislativePropositionTypesControllers.getLegislativePropositionTypes);
+//legislative proposition tags
+router.get('/legislativePropositionTag/:legislativePropositionTagId', legislativePropositionTagsControllers.getLegislativePropositionTag);
+router.put('/legislativePropositionTag', legislativePropositionTagsControllers.newLegislativePropositionTag);
+router.post('/legislativePropositionTag', legislativePropositionTagsControllers.editLegislativePropositionTag);
+router.get('/legislativePropositionTags/:legislativePropositionTypeId', legislativePropositionTagsControllers.getLegislativePropositionTags);
+router.get('/legislativePropositionTags', legislativePropositionTagsControllers.getAllLegislativePropositionTags);
+router.get('/checkUniquelegislativePropositionTagDescription/:legislativePropositionTypeId', legislativePropositionTagsControllers.checkUniqueDescription);
+router.delete('/legislativePropositionTag/:legislativePropositionTagId', legislativePropositionTagsControllers.removeLegislativePropositionTag);
+
+//legislative proposition relationship types
+router.get('/legislativePropositionRelationshipTypes', legislativePropositionRelationshipTypesControllers.getLegislativePropositionRelationshipTypes);
+
+//events from Google Calendar API Service
+router.get('/eventsCalendar', eventsCalendarControllers.getEvents);
+router.get('/eventCalendar', eventsCalendarControllers.getEvent);
 
 //security roles
 router.get('/securityRoles', securityRoleControllers.getSecurityRoles);

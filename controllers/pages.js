@@ -6,6 +6,9 @@ var winston = require('winston');
 var PageModule = require('../models/Page.js');
 var Page = PageModule.getModel();
 var Utils = require('../util/Utils.js');
+var Minio = require('minio');
+var config = require('config');
+var uuidModule = require('uuid');
 var _ = require('lodash');
 
 /*****************************************************************************
@@ -217,4 +220,118 @@ module.exports.getIncrementPageViews = function(req, res, next) {
       Utils.sendJSONresponse(res, 400, { message: 'undefined page id' });
    }
 
+}
+
+module.exports.uploadWysiwygFileAttachment = function(req, res, next) {
+   if (!req.files) {
+      Utils.sendJSONresponse(res, 400, { message: 'No files were uploaded.' });
+   } else {
+      var wysiwygFileAttachment = req.files.file;
+      var uuid = uuidModule.v4();
+      var camaraApiConfig = config.get("CamaraApi");
+
+      var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+      //use the uuid as the file name
+      var fileName = uuid;
+      var fileNameParts = _.split(wysiwygFileAttachment.name, '.');
+      if(fileNameParts.length > 1) {
+         //append the extension file
+         fileName +=  "." + fileNameParts[fileNameParts.length - 1];
+      }
+      //send the file to S3 server
+      s3Client.putObject( camaraApiConfig.Pages.s3WysiwygFileAttachments.s3Bucket,
+                          camaraApiConfig.Pages.s3WysiwygFileAttachments.s3Folder + "/" + fileName,
+                          wysiwygFileAttachment.data,
+                          wysiwygFileAttachment.data.length,
+                          wysiwygFileAttachment.mimetype,
+      function(err, etag) {
+         if(!err) {
+            Utils.sendJSONresponse(res, 200, {
+               'message': 'file uploaded',
+               'originalFilename': wysiwygFileAttachment.name,
+               'filename': fileName,
+               'link': camaraApiConfig.Pages.s3WysiwygFileAttachments.urlBase + "/" + fileName
+            });
+         } else {
+            winston.error("Error while uploading file of the news item, err = [%s]", err);
+            Utils.next(400, err, next);
+         }
+      });
+   }
+}
+
+module.exports.uploadWysiwygFileImageAttachment = function(req, res, next) {
+   if (!req.files) {
+      Utils.sendJSONresponse(res, 400, { message: 'No image files were uploaded.' });
+   } else {
+      var wysiwygFileImageAttachment = req.files.file;
+      var uuid = uuidModule.v4();
+      var camaraApiConfig = config.get("CamaraApi");
+
+      var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+      //use the uuid as the file name
+      var fileName = uuid;
+      var fileNameParts = _.split(wysiwygFileImageAttachment.name, '.');
+      if(fileNameParts.length > 1) {
+         //append the extension file
+         fileName +=  "." + fileNameParts[fileNameParts.length - 1];
+      }
+      //send the file to S3 server
+      s3Client.putObject( camaraApiConfig.Pages.s3WysiwygFileImageAttachments.s3Bucket,
+                          camaraApiConfig.Pages.s3WysiwygFileImageAttachments.s3Folder + "/" + fileName,
+                          wysiwygFileImageAttachment.data,
+                          wysiwygFileImageAttachment.data.length,
+                          wysiwygFileImageAttachment.mimetype,
+      function(err, etag) {
+         if(!err) {
+            Utils.sendJSONresponse(res, 200, {
+               'message': 'file image uploaded',
+               'originalFilename': wysiwygFileImageAttachment.name,
+               'filename': fileName,
+               'link': camaraApiConfig.Pages.s3WysiwygFileImageAttachments.urlBase + "/" + fileName
+            });
+         } else {
+            winston.error("Error while uploading file image of the news item, err = [%s]", err);
+            Utils.next(400, err, next);
+         }
+      });
+   }
+}
+
+module.exports.uploadWysiwygFileVideoAttachment = function(req, res, next) {
+   if (!req.files) {
+      Utils.sendJSONresponse(res, 400, { message: 'No video files were uploaded.' });
+   } else {
+      var wysiwygFileVideoAttachment = req.files.file;
+      var uuid = uuidModule.v4();
+      var camaraApiConfig = config.get("CamaraApi");
+
+      var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+      //use the uuid as the file name
+      var fileName = uuid;
+      var fileNameParts = _.split(wysiwygFileVideoAttachment.name, '.');
+      if(fileNameParts.length > 1) {
+         //append the extension file
+         fileName +=  "." + fileNameParts[fileNameParts.length - 1];
+      }
+      //send the file to S3 server
+      s3Client.putObject( camaraApiConfig.Pages.s3WysiwygFileVideoAttachments.s3Bucket,
+                          camaraApiConfig.Pages.s3WysiwygFileVideoAttachments.s3Folder + "/" + fileName,
+                          wysiwygFileVideoAttachment.data,
+                          wysiwygFileVideoAttachment.data.length,
+                          wysiwygFileVideoAttachment.mimetype,
+      function(err, etag) {
+         if(!err) {
+            Utils.sendJSONresponse(res, 200, {
+               'message': 'file image uploaded',
+               'originalFilename': wysiwygFileVideoAttachment.name,
+               'filename': fileName,
+               'link': camaraApiConfig.Pages.s3WysiwygFileVideoAttachments.urlBase + "/" + fileName
+            });
+         } else {
+            winston.error("Error while uploading file video of the news item, err = [%s]", err);
+            Utils.next(400, err, next);
+         }
+      });
+   }
 }

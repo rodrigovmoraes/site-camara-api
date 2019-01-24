@@ -1,4 +1,9 @@
 /*****************************************************************************
+*************************** DEPENDENCIES SECTION *****************************
+******************************* (LIBS MODULES) *******************************
+******************************************************************************/
+var _ = require('lodash');
+/*****************************************************************************
 ******************************* PRIVATE **************************************
 /*****************************************************************************/
 var _unauthorizedErrorName = "UnauthorizedError";
@@ -17,9 +22,9 @@ module.exports.handleErrorForAsync = function(fn, resultOnError) {
       resultOnError = false;
    }
    return function(done) {
-      try{
+      try {
          fn(done);
-      }catch(err){
+      } catch(err) {
          done(err, resultOnError);
       }
    }
@@ -37,10 +42,10 @@ module.exports.sendJSONErrorResponse = function(res, status, err) {
   var errObject = { 'message': err.message };
   if(err.code){
      errObject['mongoCodeError'] = err.code;
- }
- if (res.app.get('env') === 'development') {
+  }
+  if (res.app.get('env') === 'development') {
      errObject['error'] = err.toString();
- }
+  }
   res.json(errObject);
 };
 
@@ -143,4 +148,138 @@ module.exports.buildHashByIds = function(objects) {
    }
 
    return hash;
+}
+
+module.exports.dateToDDMMYYYY = function(pdate) {
+   if(pdate) {
+      return _.padStart(pdate.getDate(), 2, '0') + "/" +
+             _.padStart(pdate.getMonth() + 1, 2, '0')  + "/" +
+             _.padStart(pdate.getFullYear(), 4, '0');
+   } else {
+      return "";
+   }
+}
+
+module.exports.dateToYYYYMMDD = function(pdate) {
+   if(pdate) {
+      return _.padStart(pdate.getFullYear(), 4, '0') + "-" +
+             _.padStart(pdate.getMonth() + 1, 2, '0')  + "-" +
+             _.padStart(pdate.getDate(), 2, '0');
+
+
+   } else {
+      return "";
+   }
+}
+
+module.exports.datetimeToHHhMI = function(pdate) {
+   if(pdate) {
+      return _.padStart(pdate.getHours(), 2, '0') + "h" +
+             _.padStart(pdate.getMinutes(), 2, '0');
+
+
+   } else {
+      return "";
+   }
+}
+
+module.exports.getDateOneMonthRangeFromNow = function(utcOffset) {
+   var now = new Date();
+   var day = _.padStart(now.getDate(), 2, '0');
+   var month = _.padStart(now.getMonth() + 1, 2, '0');
+   var year = _.padStart(now.getFullYear(), 4, '0');
+   var utcOffsetValue = _camaraApiConfigService.getEventsCalendarUTCOffset();
+   var utcOffset = _.padStart(Math.abs(utcOffsetValue), 2, '0');
+   var minDateStr = year + "-" + month + "-" + day + "T00:00:00" + (utcOffsetValue >= 0 ? "+" : "-") + utcOffset + ":00";
+
+   var minDate = new Date(minDateStr);
+   var maxDate = new Date(minDate.getTime());
+   maxDate.setDate(maxDate.getDate() + 1);
+   return { 'minDate' : minDate,
+            'maxDate' : maxDate
+          }
+}
+
+module.exports.getDateSomeMonthsAfterFromNow = function(utcOffsetValue, months) {
+   var now = new Date();
+   var monthsAfter = months ? months : 1;
+   now.setMonth(now.getMonth() + 1);
+   //find the last day of the next month
+   var prevMonth = now.getMonth();
+   var prevYear = now.getFullYear();
+   var actualMonth;
+   var actualYear;
+   var count = 0;
+   while(count < monthsAfter) {
+      now.setDate(now.getDate() + 1);
+      actualMonth = now.getMonth();
+      actualYear = now.getFullYear();
+      if( actualMonth !== prevMonth ||
+          actualYear !== prevYear ) {
+             count++;
+      }
+      prevMonth = actualMonth;
+      prevYear = actualYear;
+   }
+   now.setDate(now.getDate() - 1);
+   var day = _.padStart(now.getDate(), 2, '0');
+   var month = _.padStart(now.getMonth() + 1, 2, '0');
+   var year = _.padStart(now.getFullYear(), 4, '0');
+   var utcOffset = _.padStart(Math.abs(utcOffsetValue), 2, '0');
+   var dateStr = year + "-" + month + "-" + day + "T23:59:59" + (utcOffsetValue >= 0 ? "+" : "-") + utcOffset + ":00";
+
+   var rdate = new Date(dateStr);
+   return rdate;
+}
+
+module.exports.getDateSomeMonthsBeforeFromNow = function(utcOffsetValue, months) {
+   var now = new Date();
+   var monthsBefore = months ? months : 1;
+   now.setMonth(now.getMonth() - 1);
+   //find the first day of the previous month
+   var prevMonth = now.getMonth();
+   var prevYear = now.getFullYear();
+   var actualMonth;
+   var actualYear;
+   var count = 0;
+   while(count < monthsBefore) {
+      now.setDate(now.getDate() - 1);
+      actualMonth = now.getMonth();
+      actualYear = now.getFullYear();
+      if( actualMonth !== prevMonth ||
+          actualYear !== prevYear ) {
+             count++;
+      }
+      prevMonth = actualMonth;
+      prevYear = actualYear;
+   }
+   now.setDate(now.getDate() + 1);
+   var day = _.padStart(now.getDate(), 2, '0');
+   var month = _.padStart(now.getMonth() + 1, 2, '0');
+   var year = _.padStart(now.getFullYear(), 4, '0');
+   var utcOffset = _.padStart(Math.abs(utcOffsetValue), 2, '0');
+   var dateStr = year + "-" + month + "-" + day + "T00:00:00" + (utcOffsetValue >= 0 ? "+" : "-") + utcOffset + ":00";
+
+   var rdate = new Date(dateStr);
+   return rdate;
+}
+
+module.exports.equalsMongoId = function(id1, id2) {
+      if(id1 && id2) {
+         var length1 = id1.length;
+         var length2 = id2.length;
+         if(length1 === length2) {
+            var i;
+            for(i = 0; i < length1; i++) {
+               if(id1[i] !== id2[i]) {
+                  return false;
+               }
+            }
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         return id1 === id2;
+      }
 }

@@ -52,6 +52,16 @@ var BannerModule = require('./models/Banner.js');
 var HotNewsItemModule = require('./models/HotNewsItem.js');
 var BreakingNewsItemModule = require('./models/BreakingNewsItem.js');
 var FBreakingNewsItemModule = require('./models/FBreakingNewsItem.js');
+var LicitacaoCategoryModule = require('./models/LicitacaoCategory.js');
+var LicitacaoEventModule = require('./models/LicitacaoEvent.js');
+var LicitacaoModule = require('./models/Licitacao.js');
+var LegislativeProposition = require('./models/LegislativeProposition.js');
+var LegislativePropositionFileAttachment = require('./models/LegislativePropositionFileAttachment.js');
+var LegislativePropositionRelationshipType = require('./models/LegislativePropositionRelationshipType.js');
+var LegislativePropositionTag = require('./models/LegislativePropositionTag.js');
+var LegislativePropositionType = require('./models/LegislativePropositionType.js');
+var LegislativePropositionRemoved = require('./models/LegislativePropositionRemoved.js');
+
 DbModule.setDbURI(camaraApiConfig.Models.Db.dbURI);
 DbModule.useMock(camaraApiConfig.Models.Db.useMock);
 DbModule.connect(function(mongoose, connection) {
@@ -89,6 +99,33 @@ DbModule.connect(function(mongoose, connection) {
    //Fixed Breaking News Item Model
    FBreakingNewsItemModule.setMongoose(mongoose);
    FBreakingNewsItemModule.setConnection(connection);
+   //Licitacao Category Model
+   LicitacaoCategoryModule.setMongoose(mongoose);
+   LicitacaoCategoryModule.setConnection(connection);
+   //Licitacao Event Model
+   LicitacaoEventModule.setMongoose(mongoose);
+   LicitacaoEventModule.setConnection(connection);
+   //Licitacao Model
+   LicitacaoModule.setMongoose(mongoose);
+   LicitacaoModule.setConnection(connection);
+   //LegislativeProposition Model
+   LegislativeProposition.setMongoose(mongoose);
+   LegislativeProposition.setConnection(connection);
+   //LegislativePropositionFileAttachment Model
+   LegislativePropositionFileAttachment.setMongoose(mongoose);
+   LegislativePropositionFileAttachment.setConnection(connection);
+   //LegislativePropositionRelationshipType Model
+   LegislativePropositionRelationshipType.setMongoose(mongoose);
+   LegislativePropositionRelationshipType.setConnection(connection);
+   //LegislativePropositionTag Model
+   LegislativePropositionTag.setMongoose(mongoose);
+   LegislativePropositionTag.setConnection(connection);
+   //LegislativePropositionType Model
+   LegislativePropositionType.setMongoose(mongoose);
+   LegislativePropositionType.setConnection(connection);
+   //LegislativePropositionRemoved Model
+   LegislativePropositionRemoved.setMongoose(mongoose);
+   LegislativePropositionRemoved.setConnection(connection);
    //sample data generator
    var SampleDataGenerator = require('./models/SampleDataGenerator.js');
    SampleDataGenerator.setSampleDataGenerationActivated(camaraApiConfig.Models.SampleDataGenerator.activated);
@@ -126,7 +163,6 @@ app.use(function(req, res, next) {
     next(err);
 });
 
-
 // error handlers
 
 // Catch unauthorised errors
@@ -134,7 +170,7 @@ app.use(function (err, req, res, next) {
   if (err.name === Util.getUnauthorizedErrorName()) {
        res.status(401);
        res.json({"message" : err.name + ": " + err.message});
-   }else{
+   } else {
       next(err);
    }
 });

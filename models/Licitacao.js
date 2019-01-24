@@ -10,45 +10,65 @@ var _connection;
 var _mongoose;
 var _model;
 var _modelInitialized = false;
-var _modelName = 'Banner';
+var _modelName = 'Licitacao';
 
 var _createModelSchema = function(mongoose) {
-   //banner schema definition
-   var bannerSchema = new mongoose.Schema({
-     type: {
-        type: String,
-        required: true,
-        unique: false,
-        default: 'link' //link, news, page, flickr, youtube
-     },
-     order: {
+   //licitacao schema definition
+   var licitacaoSchema = new mongoose.Schema({
+     number: {
         type: Number,
         required: true,
-        unique: false,
-        default: 0
+        unique: false
      },
-     imageFile: {
+     year: {
+        type: Number,
+        required: true,
+        unique: false
+     },
+     description: {
         type: String,
         required: true,
         unique: false
      },
-     access : {
-        type: mongoose.Schema.Types.Mixed,
+     creationDate: {
+        type: Date,
         required: true,
-        default: {}
-     }
-
-     /******************
-      access
-      ******************
-      //example for link type
-      { "url": "http://addres/page",
-        "target": "_blank"
-      }
-     */
+        unique: false
+     },
+     publicationDate: {
+        type: Date,
+        required: false,
+        unique: false
+     },
+     changedDate: {
+        type: Date,
+        required: false,
+        unique: false
+     },
+     state : {
+        type: Number,
+        required: true,
+        unique: false,
+        default: 0
+        //0: created
+        //1: published
+        //2: invisible
+     },
+     category : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'LicitacaoCategory',
+        required: true
+     },
+     events : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'LicitacaoEvent',
+        required: true
+     }]
    });
+   // number/year must be unique
+   licitacaoSchema.index({ year: 1, number: 1 }, { unique: true });
 
-   return bannerSchema;
+   return licitacaoSchema;
 }
 
 /*****************************************************************************

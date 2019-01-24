@@ -14,6 +14,15 @@ var NewsItem = require('../models/NewsItem.js').getModel();
 var Page = require('../models/Page.js').getModel();
 var BreakingNews = require('../models/BreakingNewsItem.js').getModel();
 var FBreakingNews = require('../models/FBreakingNewsItem.js').getModel();
+var LicitacaoCategory = require('../models/LicitacaoCategory.js').getModel();
+var LicitacaoEvent = require('../models/LicitacaoEvent.js').getModel();
+var Licitacao = require('../models/Licitacao.js').getModel();
+var LegislativeProposition = require('../models/LegislativeProposition.js').getModel();
+var LegislativePropositionRemoved = require('../models/LegislativePropositionRemoved.js').getModel();
+var LegislativePropositionType = require('../models/LegislativePropositionType.js').getModel();
+var LegislativePropositionTag = require('../models/LegislativePropositionTag.js').getModel();
+var LegislativePropositionFileAttachment = require('../models/LegislativePropositionFileAttachment.js').getModel();
+var LegislativePropositionRelationshipType = require('../models/LegislativePropositionRelationshipType.js').getModel();
 var async = require("async");
 var Util = require("../util/Utils.js");
 var fs = require("fs");
@@ -32,6 +41,635 @@ var _sampleDataCleaningActivated = false;
 ******************************* PRIVATE **************************************
 ***************************(LOADING FUNCTIONS)********************************
 /*****************************************************************************/
+
+//load legislative proposition types
+var _loadLegislativePropositionTypes = function(done) {
+   winston.verbose("Creating legislative proposition types ...");
+   var legislativePropositionTypesList = [  { code: 1, description: "Lei Ordinária" },
+                                            { code: 2, description: "Resolução" },
+                                            { code: 3, description: "Decreto Legislativo" },
+                                            { code: 4, description: "Emenda Lei Orgânica" },
+                                            { code: 5, description: "Lei Orgânica" },
+                                            { code: 6, description: "Regimento Interno" },
+                                            { code: 7, description: "Lei Complementar" } ];
+   LegislativePropositionType.insertMany(legislativePropositionTypesList, function(err) {
+      if(err) {
+         winston.error("Error while saving legislative proposition types for testing in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative proposition types created.");
+         done(null, true);
+      }
+   });
+}
+
+//load legislative proposition tags
+var _loadLegislativePropositionTags = async function(done) {
+   winston.verbose("Creating legislative proposition tags ...");
+
+   var _getPropositionTypeIdByTypeCode = function(typeCode) {
+      return new Promise(function(resolve, reject) {
+         LegislativePropositionType.findOne({ 'code':  typeCode })
+                                   .then(function(legislativePropositionType) {
+                                      resolve(legislativePropositionType._id);
+                                   }).catch(function(err) {
+                                      reject(err);
+                                   });
+      });
+   }
+
+   var legislativePropositionTagsList = [ { propositionTypeCode: 1, description: "ADIN - Ação Direta de Inconstitucionalidade" },
+                                          { propositionTypeCode: 1, description: "Agências Bancárias" },
+                                          { propositionTypeCode: 1, description: "Alvarás/Licenças/registro" },
+                                          { propositionTypeCode: 1, description: "Auxílio Financeiro/ Subvenções/ Empréstimos" },
+                                          { propositionTypeCode: 1, description: "benefícios sociais" },
+                                          { propositionTypeCode: 1, description: "Bens Públicos Municipais" },
+                                          { propositionTypeCode: 1, description: "Campanhas/Divulgação" },
+                                          { propositionTypeCode: 1, description: "Código de Arruamento e Loteamento" },
+                                          { propositionTypeCode: 1, description: "Código de Obras" },
+                                          { propositionTypeCode: 1, description: "Código de Posturas" },
+                                          { propositionTypeCode: 1, description: "Código de Zoneamento" },
+                                          { propositionTypeCode: 1, description: "Código Tributário" },
+                                          { propositionTypeCode: 1, description: "Comércio e Indústria" },
+                                          { propositionTypeCode: 1, description: "Concursos Públicos" },
+                                          { propositionTypeCode: 1, description: "Conselhos ou Fundos Municipais" },
+                                          { propositionTypeCode: 1, description: "Convênios/ Contratos / Termos de Cooperação" },
+                                          { propositionTypeCode: 1, description: "Crianças/ Adolescentes / Jovens" },
+                                          { propositionTypeCode: 1, description: "Cultura/ Esportes/ Lazer" },
+                                          { propositionTypeCode: 1, description: "Datas Comemorativas/Conscientização" },
+                                          { propositionTypeCode: 1, description: "Defesa dos Animais" },
+                                          { propositionTypeCode: 1, description: "Denominações" },
+                                          { propositionTypeCode: 1, description: "Direitos da Pessoa Humana" },
+                                          { propositionTypeCode: 1, description: "Divulgação de Serviços e Benefícios / Informativos" },
+                                          { propositionTypeCode: 1, description: "Educação" },
+                                          { propositionTypeCode: 1, description: "Estrutura da Administração Pública" },
+                                          { propositionTypeCode: 1, description: "Financiamentos do Poder Público" },
+                                          { propositionTypeCode: 1, description: "Fiscalização" },
+                                          { propositionTypeCode: 1, description: "Funcionalismo Público" },
+                                          { propositionTypeCode: 1, description: "Habitação" },
+                                          { propositionTypeCode: 1, description: "Idosos" },
+                                          { propositionTypeCode: 1, description: "Isenções" },
+                                          { propositionTypeCode: 1, description: "Lei de Diretrizes Orçamentárias" },
+                                          { propositionTypeCode: 1, description: "Leis Publicadas pela Câmara" },
+                                          { propositionTypeCode: 1, description: "Limpeza Urbana" },
+                                          { propositionTypeCode: 1, description: "Meio Ambiente" },
+                                          { propositionTypeCode: 1, description: "Mulher / Gestantes" },
+                                          { propositionTypeCode: 1, description: "obras" },
+                                          { propositionTypeCode: 1, description: "Orçamento" },
+                                          { propositionTypeCode: 1, description: "Outras normas do município" },
+                                          { propositionTypeCode: 1, description: "Parque Tecnológico" },
+                                          { propositionTypeCode: 1, description: "Patrimônio Histórico" },
+                                          { propositionTypeCode: 1, description: "Pessoas com Deficiências" },
+                                          { propositionTypeCode: 1, description: "Planejamento Regional" },
+                                          { propositionTypeCode: 1, description: "Plano Diretor" },
+                                          { propositionTypeCode: 1, description: "Plano Plurianual" },
+                                          { propositionTypeCode: 1, description: "Planta Genérica" },
+                                          { propositionTypeCode: 1, description: "Prêmios / Homenagens" },
+                                          { propositionTypeCode: 1, description: "Propaganda e Publicidade / Rádio/TV/Internet" },
+                                          { propositionTypeCode: 1, description: "Religião" },
+                                          { propositionTypeCode: 1, description: "Saúde" },
+                                          { propositionTypeCode: 1, description: "Segurança Pública / Guarda Municipal / Bombeiros" },
+                                          { propositionTypeCode: 1, description: "Serviço Funerário / Cemitérios" },
+                                          { propositionTypeCode: 1, description: "Serviços" },
+                                          { propositionTypeCode: 1, description: "Serviços de Água e Esgoto" },
+                                          { propositionTypeCode: 1, description: "Serviços de Iluminação Pública" },
+                                          { propositionTypeCode: 1, description: "Serviços de Telefonia Pública" },
+                                          { propositionTypeCode: 1, description: "Símbolos Municipais" },
+                                          { propositionTypeCode: 1, description: "Trânsito" },
+                                          { propositionTypeCode: 1, description: "Transporte Coletivo / Táxi / Zona Azul" },
+                                          { propositionTypeCode: 1, description: "Turismo" },
+                                          { propositionTypeCode: 1, description: "Utilidade Pública / ONG / OSCIP" },
+                                          { propositionTypeCode: 2, description: "Aprovação das Contas" },
+                                          { propositionTypeCode: 2, description: "Área Municipal/Conservação" },
+                                          { propositionTypeCode: 2, description: "Arquivo Público" },
+                                          { propositionTypeCode: 2, description: "Banco de Curriculos" },
+                                          { propositionTypeCode: 2, description: "Cadastro de Instituições" },
+                                          { propositionTypeCode: 2, description: "Cidade Irmã" },
+                                          { propositionTypeCode: 2, description: "Denominações/Galeria" },
+                                          { propositionTypeCode: 2, description: "Documentos Oficiais/Papel Timbrado/Braille" },
+                                          { propositionTypeCode: 2, description: "Frota Oficial" },
+                                          { propositionTypeCode: 2, description: "Funcionalismo/Subsídio" },
+                                          { propositionTypeCode: 2, description: "Leitura da Bíblia" },
+                                          { propositionTypeCode: 2, description: "Licitação - Pregão/Edital" },
+                                          { propositionTypeCode: 2, description: "Memorial" },
+                                          { propositionTypeCode: 2, description: "Prêmios/Diplomas/Medalhas/Comemorações" },
+                                          { propositionTypeCode: 2, description: "Projetos de Lei/Tramitação/Arquivamento" },
+                                          { propositionTypeCode: 2, description: "Protocolo Interno" },
+                                          { propositionTypeCode: 2, description: "Regimento Especial/LOM" },
+                                          { propositionTypeCode: 2, description: "Regimento Interno/Alterações/Regulamentações" },
+                                          { propositionTypeCode: 2, description: "Título de Cidadania" },
+                                          { propositionTypeCode: 2, description: "Tribuna Popular" },
+                                          { propositionTypeCode: 2, description: "TV Legislativa/Jornal" },
+                                          { propositionTypeCode: 2, description: "Vereador Mirim" },
+                                          { propositionTypeCode: 3, description: "Aprovação das Contas" },
+                                          { propositionTypeCode: 3, description: "Certificados/Selos" },
+                                          { propositionTypeCode: 3, description: "Crédito Suplementar / Orçamento" },
+                                          { propositionTypeCode: 3, description: "Funcionalismo" },
+                                          { propositionTypeCode: 3, description: "Homenagens/Comemorações" },
+                                          { propositionTypeCode: 3, description: "Subsídios/Verba Representação do Executivo" },
+                                          { propositionTypeCode: 3, description: "Sustação/Suspensão de Efeitos" },
+                                          { propositionTypeCode: 3, description: "Título de Cidadania / Comenda" },
+                                          { propositionTypeCode: 3, description: "TV Legislativa" },
+                                          { propositionTypeCode: 3, description: "Utilidade Pública" }];
+   var i;
+   for(i = 0; i < legislativePropositionTagsList.length; i++) {
+      var legislativePropositionTagsItem = legislativePropositionTagsList[i];
+      var propositionTypeId = await _getPropositionTypeIdByTypeCode(legislativePropositionTagsItem.propositionTypeCode);
+      legislativePropositionTagsItem.propositionType = propositionTypeId;
+      delete legislativePropositionTagsItem.propositionTypeCode;
+   }
+   LegislativePropositionTag.insertMany(legislativePropositionTagsList, function(err) {
+      if(err) {
+         winston.error("Error while saving legislative proposition tags for testing in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative proposition tags created.");
+         done(null, true);
+      }
+   });
+}
+
+//load legislative proposition relationship types
+var _loadLegislativePropositionRelationshipType = function(done) {
+   var _findLegislativePropositionRelationshipTypeByCode = function(legislativePropositionRelationshipTypes, code) {
+      if(legislativePropositionRelationshipTypes) {
+         var i;
+         for(i = 0; i < legislativePropositionRelationshipTypes.length; i++) {
+            var legislativePropositionRelationshipType = legislativePropositionRelationshipTypes[i];
+            if(legislativePropositionRelationshipType.code === code) {
+               return legislativePropositionRelationshipType;
+            }
+         }
+      }
+      return null;
+   }
+   winston.verbose("Creating legislative proposition relationship types ...");
+   var legislativePropositionRelationshipTypesList = [ { code: 1, description: "Altera a Lei", antonymCode: 2 },
+                                                       { code: 2, description: "Alterada pela Lei", antonymCode: 1 },
+                                                       { code: 3, description: "Revoga a Lei", antonymCode: 4 },
+                                                       { code: 4, description: "Revogada pela Lei", antonymCode: 3 },
+                                                       { code: 5, description: "Versa sobre matéria da Lei", antonymCode: 6 },
+                                                       { code: 6, description: "Tem matéria versada na Lei", antonymCode: 5 },
+                                                       { code: 7, description: "Represtina a Lei", antonymCode: 8 },
+                                                       { code: 8, description: "É Represtinada pela Lei", antonymCode: 7 } ];
+   LegislativePropositionRelationshipType.insertMany(legislativePropositionRelationshipTypesList, async function(err, legislativePropositionRelationshipTypes) {
+      if(err) {
+         winston.error("Error while saving legislative proposition relationship types for testing in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         //set antonym field
+         var i;
+         for(i = 0; i < legislativePropositionRelationshipTypes.length; i++) {
+            var legislativePropositionRelationshipType = legislativePropositionRelationshipTypes[i];
+            var antonymLegislativePropositionRelationshipType = _findLegislativePropositionRelationshipTypeByCode(legislativePropositionRelationshipTypes, legislativePropositionRelationshipType.antonymCode);
+            if(antonymLegislativePropositionRelationshipType) {
+               legislativePropositionRelationshipType.antonym = antonymLegislativePropositionRelationshipType._id;
+               await legislativePropositionRelationshipType.save();
+            }
+         }
+         winston.verbose("Legislative proposition relationship types created.");
+         done(null, true);
+      }
+   });
+}
+
+//load legislative propositions
+var _loadLegislativePropositions = function(done) {
+   winston.verbose("Creating legislative propositions ...");
+
+   //auxiliaries stuffs
+   var _insertLegislativePropositionAttachment = function(legislativePropositionAttachment) {
+      return new Promise(function(resolve, reject) {
+         var legislativePropositionFileAttachment = new LegislativePropositionFileAttachment();
+
+         legislativePropositionFileAttachment.file = legislativePropositionAttachment.file;
+         legislativePropositionFileAttachment.originalFilename = legislativePropositionAttachment.originalFilename;
+         legislativePropositionFileAttachment.contentType = legislativePropositionAttachment.contentType;
+         legislativePropositionFileAttachment.legislativeProposition = legislativePropositionAttachment.legislativeProposition;
+         legislativePropositionFileAttachment.consolidatedFileAttachment = legislativePropositionAttachment.consolidatedFileAttachment;
+
+         legislativePropositionFileAttachment
+            .save()
+            .then(function(result) {
+               resolve(result);
+         }).catch(function(error) {
+               reject(error);
+         });
+      });
+   }
+
+   var _equalsObjectId = function(id1, id2) {
+      if(id1 && id2) {
+         if(id1.id.length === id2.id.length) {
+            var j;
+            for(j = 0; j < id1.id.length; j++) {
+               if(id1.id[j] !== id2.id[j]) {
+                  return false;
+               }
+            }
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   var _getPropositionTagsForType = function(propositionTags, propositionType) {
+      if(propositionTags && propositionTags.length > 0) {
+         var i;
+         var propositionTagsToBeReturned = [];
+         for(i = 0; i < propositionTags.length; i++) {
+            var propositionTag = propositionTags[i];
+            if(_equalsObjectId(propositionType._id, propositionTag.propositionType)) {
+               propositionTagsToBeReturned.push(propositionTag);
+            }
+         }
+         return propositionTagsToBeReturned;
+      } else {
+         return null;
+      }
+   }
+
+   var _getRandomPropositionTag = function(propositionTags) {
+      if(propositionTags && propositionTags.length > 0) {
+         var propositionTagIndex = Util.random(0, propositionTags.length - 1);
+         var randomPropositionTag = propositionTags[propositionTagIndex];
+         propositionTags.splice(propositionTagIndex, 1);
+         return randomPropositionTag;
+      } else {
+         return null;
+      }
+   }
+
+   var legislativePropositionAttachmentFileTestBuffer = fs.readFileSync("./test/resources/legislative_proposition_attachment_file.pdf", { flag: 'r' });
+   var legislativePropositionConsolidatedAttachmentFileTestBuffer = fs.readFileSync("./test/resources/legislative_proposition_consolidated_attachment_file.pdf", { flag: 'r' });
+   var legislativePropositionTypes = null;
+   var legislativePropositionTags = null;
+   var users = null;
+   var legislativePropositionRelationshipTypes = null;
+
+   //upload the file test to S3
+   var camaraApiConfig = config.get("CamaraApi");
+   var legislativePropositionAttachmentFilename = "legislative_proposition_attachment_file.pdf";
+   var legislativePropositionConsolidatedAttachmentFilename = "legislative_proposition_consolidated_attachment_file.pdf";
+
+   var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+   //send the file to S3 server
+   s3Client.putObject( camaraApiConfig.LegislativeProposition.s3LegislativePropositionAttachment.s3Bucket,
+                       camaraApiConfig.LegislativeProposition.s3LegislativePropositionAttachment.s3Folder + "/" + legislativePropositionAttachmentFilename,
+                       legislativePropositionAttachmentFileTestBuffer,
+                       legislativePropositionAttachmentFileTestBuffer.length,
+                       "application/pdf")
+           .then(function(etag) {
+               return s3Client.putObject( camaraApiConfig.LegislativeProposition.s3LegislativePropositionConsolidatedAttachment.s3Bucket,
+                                          camaraApiConfig.LegislativeProposition.s3LegislativePropositionConsolidatedAttachment.s3Folder + "/" + legislativePropositionConsolidatedAttachmentFilename,
+                                          legislativePropositionConsolidatedAttachmentFileTestBuffer,
+                                          legislativePropositionConsolidatedAttachmentFileTestBuffer.length,
+                                          "application/pdf");
+           //var legislativePropositionRelationshipTypes = null;
+           }).then(function(etag) {
+               return LegislativePropositionType.find({});
+           }).then(function(plegislativePropositionTypes) {
+               legislativePropositionTypes = plegislativePropositionTypes;
+               return LegislativePropositionTag.find({});
+           }).then(function(plegislativePropositionTags) {
+               legislativePropositionTags = plegislativePropositionTags;
+               return User.find({});
+           }).then(function(pusers) {
+               users = pusers;
+               return LegislativePropositionRelationshipType.find({});
+           }).then(function(plegislativePropositionRelationshipTypes) {
+               legislativePropositionRelationshipTypes = plegislativePropositionRelationshipTypes;
+
+               var legislativePropositions = [];
+               var i;
+               for(i = 1; i <= 1000; i++) {
+
+                  var consolidated = Util.random(0, 1); //0 - not consolidated, 1 - consolidated
+                  var changed = Util.random(0, 1); //0 - not consolidated, 1 - consolidated
+                  var creationDate = Util.randomDateAndTimeInMinutes(2015,11,1, 2018,0,10);
+
+                  //number
+                  var propositionNumber = i;
+                  //date
+                  var propositionDate = new Date(creationDate.getTime() - Util.random(1, 3 * 86400) * 1000);
+                  //year
+                  var propositionYear = propositionDate.getFullYear();
+                  //description
+                  var propositionDescription = loremIpsum({ count: Util.random(2, 20) , units: 'words' });
+                  //text
+                  var propositionText = loremIpsum({ count: 5,
+                                                     units: 'paragraphs',
+                                                     sentenceLowerBound: 5,
+                                                     sentenceUpperBound: 15,
+                                                     paragraphLowerBound: 3,
+                                                     paragraphUpperBound: 7,
+                                                     format: 'html' });
+                  //consolidated_text
+                  var propositionConsolidatedText = consolidated
+                                                      ? loremIpsum({ count: 5,
+                                                                     units: 'paragraphs',
+                                                                     sentenceLowerBound: 5,
+                                                                     sentenceUpperBound: 15,
+                                                                     paragraphLowerBound: 3,
+                                                                     paragraphUpperBound: 7,
+                                                                     format: 'html' })
+                                                      : null;
+                  //text_attachment
+                  var propositionTextAttachment = loremIpsum({ count: 5,
+                                                               units: 'paragraphs',
+                                                               sentenceLowerBound: 5,
+                                                               sentenceUpperBound: 15,
+                                                               paragraphLowerBound: 3,
+                                                               paragraphUpperBound: 7,
+                                                               format: 'html' });
+                  //consolidated_text_attachment
+                  var consolidatedPropositionTextAttachment = consolidated
+                                                                  ? loremIpsum({ count: 5,
+                                                                                 units: 'paragraphs',
+                                                                                 sentenceLowerBound: 5,
+                                                                                 sentenceUpperBound: 15,
+                                                                                 paragraphLowerBound: 3,
+                                                                                 paragraphUpperBound: 7,
+                                                                                 format: 'html' })
+                                                                  : null;
+                  //creationDate
+                  var creationDate = Util.randomDateAndTimeInMinutes(2015,11,1, 2018,0,10);
+                  //changedDate
+                  var changedDate = changed === 0
+                                             ? null
+                                             : (  new Date(creationDate.getTime() + Util.random(1, 7 * 86400) * 1000) );
+                  //type
+                  var propositionTypeIndex = null;
+                  var propositionType = null;
+                  if (legislativePropositionTypes && legislativePropositionTypes.length > 0) {
+                     propositionTypeIndex = Util.random(0, legislativePropositionTypes.length - 1);
+                     propositionType = legislativePropositionTypes[propositionTypeIndex];
+                  }
+                  //creationUser
+                  var propositionCreationUserIndex = null;
+                  var propositionCreationUser = null;
+                  if(users && users.length > 0) {
+                     propositionCreationUserIndex = Util.random(0, users.length - 1);
+                     propositionCreationUser = users[propositionCreationUserIndex];
+                  }
+                  //changeUser
+                  var propositionChangedUserIndex = null;
+                  var propositionChangedUser = null;
+                  if(users && users.length > 0) {
+                     propositionChangedUserIndex = Util.random(0, users.length - 1);
+                     propositionChangedUser = users[propositionChangedUserIndex];
+                  }
+                  //tags
+                  var propositionTagsForThisInstance = [];
+                  if(legislativePropositionTags && legislativePropositionTags.length > 0) {
+                     var propositionTagsForThisType = _getPropositionTagsForType(legislativePropositionTags, propositionType);
+                     if(propositionTagsForThisType && propositionTagsForThisType.length > 0) {
+                        var propositionTagsAmount = Util.random(0, Math.min(3, propositionTagsForThisType.length));
+                        var k;
+                        var propositionTagsForThisInstance = [];
+                        for(k = 0; k < propositionTagsAmount; k++) {
+                           var randomPropositionTagsForThisInstance = _getRandomPropositionTag(propositionTagsForThisType);
+                           propositionTagsForThisInstance.push(randomPropositionTagsForThisInstance);
+                        }
+                     }
+                  }
+                  //file attachments
+                  var propositionFileAttachments = [];
+                  //consolidatedFileAttachments
+                  var consolidatedPropositionFileAttachments = [];
+                  //relationships
+                  var propositionRelationships = [];
+
+                  legislativePropositions.push({
+                     "number": propositionNumber,
+                     "year" : propositionYear,
+                     "date": propositionDate,
+                     "description": propositionDescription,
+                     "text" : propositionText,
+                     "consolidatedText": propositionConsolidatedText,
+                     "textAttachment": propositionTextAttachment,
+                     "consolidatedTextAttachment": consolidatedPropositionTextAttachment,
+                     "creationDate": creationDate,
+                     "changedDate": changedDate,
+                     "type": propositionType,
+                     "creationUser": propositionCreationUser,
+                     "changeUser": propositionChangedUser,
+                     "tags": propositionTagsForThisInstance,
+                     "fileAttachments": propositionFileAttachments,
+                     "consolidatedFileAttachments": consolidatedPropositionFileAttachments,
+                     "relationships": propositionRelationships
+                  });
+               }
+
+               return LegislativeProposition.insertMany(legislativePropositions);
+           }).then(async function(insertedLegislativePropositions) {
+             //fileAttachments
+             var propositionFileAttachments = [];
+             var i = 0;
+             for(i = 0; i < insertedLegislativePropositions.length; i++) {
+                var insertedLegislativeProposition = insertedLegislativePropositions[i];
+                var legislativePropositionsAttachmentAmount = Util.random(0, 3);
+                var j;
+                propositionFileAttachments = [];
+                for(j = 0; j < legislativePropositionsAttachmentAmount; j++) {
+                   var savedLegislativePropositionFileAttachment = await _insertLegislativePropositionAttachment({
+                      'file': legislativePropositionAttachmentFilename,
+                      'originalFilename': legislativePropositionAttachmentFilename,
+                      'contentType': 'application/pdf',
+                      'legislativeProposition': insertedLegislativeProposition,
+                      'consolidatedFileAttachment': false
+                   });
+                   propositionFileAttachments.push(savedLegislativePropositionFileAttachment);
+                }
+                insertedLegislativeProposition.fileAttachments = propositionFileAttachments;
+                await insertedLegislativeProposition.save();
+             }
+             return insertedLegislativePropositions;
+           }).then(async function(insertedLegislativePropositions) {
+             //consolidatedFileAttachments
+             var propositionFileAttachments = [];
+             var i = 0;
+             for(i = 0; i < insertedLegislativePropositions.length; i++) {
+                var insertedLegislativeProposition = insertedLegislativePropositions[i];
+                var legislativePropositionsAttachmentAmount = Util.random(0, 3);
+                var j;
+                propositionFileAttachments = [];
+                for(j = 0; j < legislativePropositionsAttachmentAmount; j++) {
+                   var savedLegislativePropositionFileAttachment = await _insertLegislativePropositionAttachment({
+                      'file': legislativePropositionConsolidatedAttachmentFilename,
+                      'originalFilename': legislativePropositionConsolidatedAttachmentFilename,
+                      'contentType': 'application/pdf',
+                      'legislativeProposition': insertedLegislativeProposition,
+                      'consolidatedFileAttachment': true
+                   });
+                   propositionFileAttachments.push(savedLegislativePropositionFileAttachment);
+                }
+                insertedLegislativeProposition.consolidatedFileAttachments = propositionFileAttachments;
+                await insertedLegislativeProposition.save();
+             }
+             return insertedLegislativePropositions;
+           }).then(async function(insertedLegislativePropositions) {
+             //propositionRelationships
+             var propositionRelationships = [];
+             var otherLegislativePropositionIndex = null;
+             var otherLegislativeProposition = null;
+             var legislativePropositionRelationshipTypeIndex = null;
+             var legislativePropositionRelationshipType = null;
+             var i = 0;
+             for(i = 0; i < insertedLegislativePropositions.length; i++) {
+                var insertedLegislativeProposition = insertedLegislativePropositions[i];
+                var propositionRelationshipsAmount = Util.random(0, 3);
+                var j;
+                propositionRelationships = [];
+                for(j = 0; j < propositionRelationshipsAmount; j++) {
+                   if(legislativePropositionRelationshipTypes && legislativePropositionRelationshipTypes.length > 0) {
+                     legislativePropositionRelationshipTypeIndex = Util.random(0, legislativePropositionRelationshipTypes.length - 1);
+                     legislativePropositionRelationshipType = legislativePropositionRelationshipTypes[legislativePropositionRelationshipTypeIndex];
+                     otherLegislativePropositionIndex = Util.random(0, insertedLegislativePropositions.length - 1);
+                     otherLegislativeProposition = insertedLegislativePropositions[otherLegislativePropositionIndex];
+                     propositionRelationships.push({
+                        'type': legislativePropositionRelationshipType._id,
+                        'otherLegislativeProposition': otherLegislativeProposition._id
+                     });
+                   }
+                }
+                insertedLegislativeProposition.relationships = propositionRelationships;
+                await insertedLegislativeProposition.save();
+             }
+             winston.verbose("Legislative propositions created.");
+             done(null, true);
+          }).
+           catch(function(err) {
+             winston.error("Error while creating legislative propositions for testing in SampleDataLoader, err = [%s]", err);
+             done(err, false);
+           });
+}
+
+//load licitacao categories
+var _loadLicitacaoCategories = function(done) {
+   winston.verbose("Creating licitacao categories ...");
+   var licitacaoCategoryList = [
+      { description: 'Concorrência' },
+      { description: 'Convite' },
+      { description: 'Pregão' },
+      { description: 'Tomada de Preço' }
+   ];
+
+   LicitacaoCategory.insertMany(licitacaoCategoryList, function(err) {
+      if(err) {
+         winston.error("Error while saving licitacao categories for testing in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Licitacoes category created.");
+         done(null, true);
+      }
+   });
+}
+
+//load licitacoes
+var _loadLicitacoes = function(done) {
+   winston.verbose("Creating licitacoes ...");
+
+   var _insertLicitacaoEvent = function (licitacaoEvent) {
+      return new Promise(function(resolve, reject) {
+         var licitacaoEventModel = new LicitacaoEvent();
+         licitacaoEventModel.description = licitacaoEvent.description;
+         licitacaoEventModel.date = licitacaoEvent.date;
+         licitacaoEventModel.file = licitacaoEvent.file;
+         licitacaoEventModel.originalFilename = licitacaoEvent.originalFilename;
+         licitacaoEventModel.contentType = licitacaoEvent.contentType;
+         licitacaoEventModel.licitacao = licitacaoEvent.licitacao;
+         licitacaoEventModel.save().then(function(result) {
+            resolve(result);
+         }).catch(function(error) {
+            reject(error);
+         });
+      });
+   }
+
+   var licitacaoEventTestBuffer = fs.readFileSync("./test/resources/licitacao_event_file.pdf", { flag: 'r' });
+
+   //upload the file test to S3
+   var camaraApiConfig = config.get("CamaraApi");
+   var licitacaoEventTestFilename = "licitacao_event_file.pdf";
+
+   var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+   //send the file to S3 server
+   s3Client.putObject( camaraApiConfig.Licitacoes.s3LicitacaoEvent.s3Bucket,
+                       camaraApiConfig.Licitacoes.s3LicitacaoEvent.s3Folder + "/" + licitacaoEventTestFilename,
+                       licitacaoEventTestBuffer,
+                       licitacaoEventTestBuffer.length,
+                       "application/pdf")
+           .then(function(etag) {
+               return LicitacaoCategory.find({});
+           }).then(async function(licitacaoCategories) {
+               var licitacaoCategoriesLength = licitacaoCategories.length;
+
+               var licitacoes = [];
+               var i;
+               for(i = 1; i <= 1000; i++) {
+                  var state = Util.random(0, 2); //0 - create, 1 - published, 2 - invisible
+                  var creationDate = Util.randomDateAndTimeInMinutes(2015,11,1, 2018,0,10);
+                  var publicationDate = state === 1
+                                             ? new Date(creationDate.getTime() + Util.random(1, 7 * 86400) * 1000)
+                                             : null;
+                  var lastEditDate = state === 0
+                                             ? null
+                                             : ( publicationDate
+                                                      ? new Date(publicationDate.getTime() + Util.random(1, 7 * 86400) * 1000)
+                                                      : new Date(creationDate.getTime() + Util.random(1, 7 * 86400) * 1000)
+                                               );
+                  var randomCategoryIndex = Util.random(0, licitacaoCategoriesLength - 1);
+                  var randomCategory = licitacaoCategories[randomCategoryIndex];
+                  licitacoes.push({
+                        'number': i,
+                        'year': creationDate.getFullYear(),
+                        'description': loremIpsum({ count: Util.random(10, 60) , units: 'words' }),
+                        'publicationDate': publicationDate,
+                        'creationDate': creationDate,
+                        'changedDate': lastEditDate,
+                        'state': state,
+                        'category': randomCategory._id,
+                        'events': []
+                  });
+               }
+
+               return Licitacao.insertMany(licitacoes);
+           }).then(async function(insertedLicitacoes) {
+             var i = 0;
+             for(i = 0; i < insertedLicitacoes.length; i++) {
+                var licitacao = insertedLicitacoes[i];
+                var events = [];
+                var eventsAmount = Util.random(1, 6);
+                var j;
+                if(licitacao.publicationDate !== null) {
+                   for(j = 0; j < eventsAmount; j++) {
+                      var dateEvent = new Date(licitacao.publicationDate.getTime() + Util.random(1, 7 * 86400) * 1000);
+                      var savedLicitacaoEvent = await _insertLicitacaoEvent({
+                        'description': loremIpsum({ count: Util.random(2, 6) , units: 'words' }),
+                        'date': new Date(licitacao.publicationDate.getTime() + Util.random(1, 7 * 86400) * 1000),
+                        'file': licitacaoEventTestFilename,
+                        'originalFilename': 'original_' + licitacaoEventTestFilename,
+                        'contentType': 'application/pdf',
+                        'licitacao': licitacao
+                      });
+                      events.push(savedLicitacaoEvent);
+                   }
+                   licitacao.events = events;
+                   await licitacao.save();
+                }
+             }
+             winston.verbose("Licitacoes created.");
+             done(null, true);
+           }).catch(function(err) {
+               winston.error("Error while creating licitacoes for testing in SampleDataLoader, err = [%s]", err);
+               done(err, false);
+           });
+}
+
 //load breaking news items
 var _loadFBreakingNews = function(done) {
 
@@ -213,7 +851,7 @@ var _loadHotNewsItems = function(done) {
          winston.error("Error while saving hot news for testing in SampleDataLoader, err = [%s]", err);
          done(err, false);
       } else {
-         winston.verbose("Hot news.");
+         winston.verbose("Hot news created.");
          done(null, true);
       }
    });
@@ -627,10 +1265,26 @@ var _loadMenuAdmin = function(done) {
                           sref: 'eventsCalendar.list',
                           order: 15,
                           isRoot: true
-                       },{ title: 'Login',
+                       }, { title: 'Licitações',
+                          icon: 'icon-basket',
+                          sref: 'licitacao.list',
+                          order: 16,
+                          isRoot: true
+                       }, { title: 'Proposituras',
+                          icon: 'icon-graduation',
+                          sref: 'legislativeProposition.list',
+                          order: 17,
+                          isRoot: true
+                       },{ title: 'Classificações',
+                          icon: 'icon-tag',
+                          sref: 'legislativePropositionTags',
+                          order: 18,
+                          isRoot: true
+                       },
+                       { title: 'Login',
                           icon: 'icon-user',
                           sref: 'login',
-                          order: 16,
+                          order: 19,
                           isRoot: true
                         }];
    //do the job
@@ -1251,9 +1905,117 @@ var _removeBanners = function(done) {
    });
 }
 
+//remove licitacao categories
+var _removeLicitacaoCategories = function(done) {
+   LicitacaoCategory.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing licitacao categories in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Licitacao categories removed");
+         done(null, true);
+      }
+   });
+}
+
+var _removeLicitacoesEvents = function(done) {
+   LicitacaoEvent.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing eventos de licitacoes in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Eventos de licitacoes removed");
+         done(null, true);
+      }
+   });
+}
+
+//remove licitacoes
+var _removeLicitacoes = function(done) {
+   Licitacao.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing licitacoes in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Licitacoes removed");
+         done(null, true);
+      }
+   });
+}
+
+//remove legislative proposition type
+var _removeLegislativePropositionTypes = function(done) {
+   LegislativePropositionType.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing legislative proposition types in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative proposition types removed");
+         done(null, true);
+      }
+   });
+}
+
+//remove legislative proposition type
+var _removeLegislativePropositionTags = function(done) {
+   LegislativePropositionTag.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing legislative proposition tags in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative proposition tags removed");
+         done(null, true);
+      }
+   });
+}
+
+//remove legislative proposition relationship types
+var _removeLegislativePropositionRelationshipTypes = function(done) {
+   LegislativePropositionRelationshipType.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing legislative proposition relationship types in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative legislative proposition relationship types removed");
+         done(null, true);
+      }
+   });
+}
+
+//remove legislative propositions
+var _removeLegislativePropositions = function(done) {
+   LegislativeProposition.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing legislative propositions in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative legislative propositions removed");
+         done(null, true);
+      }
+   });
+}
+
+//remove legislative propositions
+var _removeLegislativePropositionsRemoved = function(done) {
+   LegislativePropositionRemoved.remove({}, function(err) {
+      if (err) {
+         winston.error("Error while removing legislative propositions (removed collections) in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         winston.verbose("Legislative legislative propositions (removed collections) removed");
+         done(null, true);
+      }
+   });
+}
+
 //put the desired sample data routines here, they will be executed in the
 //order by this sample data generator
 var _loadRoutines = [
+   _loadLegislativePropositionTypes,
+   _loadLegislativePropositionTags,
+   _loadLegislativePropositionRelationshipType,
+   _loadLicitacaoCategories,
+   _loadLicitacoes,
    _loadFBreakingNews,
    _loadBreakingNews,
    _loadBanners,
@@ -1265,12 +2027,14 @@ var _loadRoutines = [
    _loadSecurityRoles,
    _loadUserGroups,
    _loadUserTest,
-   _loadRandomUsersTest
+   _loadRandomUsersTest,
+   _loadLegislativePropositions
 ];
 
 //put the desired sample data clear routines here, they will be executed in the
 //order by this sample data generator to clear data generated before
 var _clearRoutines = [
+   _removeLegislativePropositions,
    _removeFBreakingNews,
    _removeBreakingNews,
    _removeHotNewsItems,
@@ -1282,7 +2046,14 @@ var _clearRoutines = [
    _removeSecurityRoles,
    _removeNewsItems,
    _removePages,
-   _removeBanners
+   _removeBanners,
+   _removeLicitacoesEvents,
+   _removeLicitacoes,
+   _removeLicitacaoCategories,
+   _removeLegislativePropositionRelationshipTypes,
+   _removeLegislativePropositionTags,
+   _removeLegislativePropositionTypes,
+   _removeLegislativePropositionsRemoved
 ];
 
 //execute the cleaning routines to remove a previous sample data

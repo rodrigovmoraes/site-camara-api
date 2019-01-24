@@ -10,45 +10,24 @@ var _connection;
 var _mongoose;
 var _model;
 var _modelInitialized = false;
-var _modelName = 'Banner';
+var _modelName = 'LegislativePropositionType';
 
 var _createModelSchema = function(mongoose) {
-   //banner schema definition
-   var bannerSchema = new mongoose.Schema({
-     type: {
-        type: String,
-        required: true,
-        unique: false,
-        default: 'link' //link, news, page, flickr, youtube
-     },
-     order: {
+   //legislative proposition type schema definition
+   var legislativePropositionTypeSchema = new mongoose.Schema({
+     code: {
         type: Number,
         required: true,
-        unique: false,
-        default: 0
+        unique: true
      },
-     imageFile: {
+     description: {
         type: String,
         required: true,
         unique: false
-     },
-     access : {
-        type: mongoose.Schema.Types.Mixed,
-        required: true,
-        default: {}
      }
-
-     /******************
-      access
-      ******************
-      //example for link type
-      { "url": "http://addres/page",
-        "target": "_blank"
-      }
-     */
    });
 
-   return bannerSchema;
+   return legislativePropositionTypeSchema;
 }
 
 /*****************************************************************************

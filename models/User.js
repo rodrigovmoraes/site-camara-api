@@ -26,8 +26,8 @@ var _createModelSchema = function(mongoose) {
      },
      email: {
        type:  mongoose.SchemaTypes.Email,
-       unique: true,
-       required: true,
+       unique: false,
+       required: false,
        allowBlank: true
      },
      name: {

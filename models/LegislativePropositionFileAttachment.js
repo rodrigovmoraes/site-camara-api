@@ -10,45 +10,40 @@ var _connection;
 var _mongoose;
 var _model;
 var _modelInitialized = false;
-var _modelName = 'Banner';
+var _modelName = 'LegislativePropositionFileAttachment';
 
 var _createModelSchema = function(mongoose) {
-   //banner schema definition
-   var bannerSchema = new mongoose.Schema({
-     type: {
-        type: String,
-        required: true,
-        unique: false,
-        default: 'link' //link, news, page, flickr, youtube
-     },
-     order: {
-        type: Number,
-        required: true,
-        unique: false,
-        default: 0
-     },
-     imageFile: {
+   //legislative proposition file attachment schema definition
+   var legislativePropositionFileAttachmentSchema = new mongoose.Schema({
+     file: {
         type: String,
         required: true,
         unique: false
      },
-     access : {
-        type: mongoose.Schema.Types.Mixed,
+     originalFilename: {
+        type: String,
         required: true,
-        default: {}
+        unique: false
+     },
+     contentType: {
+        type: String,
+        required: false,
+        unique: false
+     },
+     legislativeProposition: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'LegislativeProposition',
+        required: true
+     },
+     consolidatedFileAttachment: {
+        type: Boolean,
+        default: false,
+        required: false,
+        unique: false
      }
-
-     /******************
-      access
-      ******************
-      //example for link type
-      { "url": "http://addres/page",
-        "target": "_blank"
-      }
-     */
    });
 
-   return bannerSchema;
+   return legislativePropositionFileAttachmentSchema;
 }
 
 /*****************************************************************************
