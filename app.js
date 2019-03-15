@@ -61,6 +61,9 @@ var LegislativePropositionRelationshipType = require('./models/LegislativePropos
 var LegislativePropositionTag = require('./models/LegislativePropositionTag.js');
 var LegislativePropositionType = require('./models/LegislativePropositionType.js');
 var LegislativePropositionRemoved = require('./models/LegislativePropositionRemoved.js');
+var PublicFinancesFile = require('./models/PublicFinancesFile.js');
+var PublicFinancesFolder = require('./models/PublicFinancesFolder.js');
+
 
 DbModule.setDbURI(camaraApiConfig.Models.Db.dbURI);
 DbModule.useMock(camaraApiConfig.Models.Db.useMock);
@@ -126,6 +129,12 @@ DbModule.connect(function(mongoose, connection) {
    //LegislativePropositionRemoved Model
    LegislativePropositionRemoved.setMongoose(mongoose);
    LegislativePropositionRemoved.setConnection(connection);
+   //PublicFinancesFile Model
+   PublicFinancesFile.setMongoose(mongoose);
+   PublicFinancesFile.setConnection(connection);
+   //PublicFinancesFolder Model
+   PublicFinancesFolder.setMongoose(mongoose);
+   PublicFinancesFolder.setConnection(connection);
    //sample data generator
    var SampleDataGenerator = require('./models/SampleDataGenerator.js');
    SampleDataGenerator.setSampleDataGenerationActivated(camaraApiConfig.Models.SampleDataGenerator.activated);

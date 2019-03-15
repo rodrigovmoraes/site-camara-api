@@ -35,6 +35,7 @@ var legislativePropositionsControllers = require('../controllers/legislativeProp
 var legislativePropositionTypesControllers = require('../controllers/legislativePropositionTypes.js');
 var legislativePropositionTagsControllers = require('../controllers/legislativePropositionTags.js');
 var legislativePropositionRelationshipTypesControllers = require('../controllers/legislativePropositionRelationshipTypes.js');
+var publicFinancesControllers = require('../controllers/publicFinances.js');
 
 var testController = require('../controllers/test.js');
 
@@ -207,6 +208,26 @@ router.delete('/legislativePropositionTag/:legislativePropositionTagId', legisla
 
 //legislative proposition relationship types
 router.get('/legislativePropositionRelationshipTypes', legislativePropositionRelationshipTypesControllers.getLegislativePropositionRelationshipTypes);
+
+//public Finances
+router.get('/publicFinances/folder/amountOfElements/:folderId', publicFinancesControllers.getAmountOfElements);
+router.get('/publicFinances/folder/amountOfElements', publicFinancesControllers.getAmountOfElements);
+router.get('/publicFinances/folder/:folderId', publicFinancesControllers.listFolderContents);
+router.get('/publicFinances/folder', publicFinancesControllers.listFolderContents);
+router.get('/publicFinances/folderPath/:folderId', publicFinancesControllers.getFolderPath);
+router.get('/publicFinances/file/:fileId', publicFinancesControllers.downloadPublicFinancesFile);
+router.put('/publicFinances/file/upload/:folderId/:fileName', publicFinancesControllers.uploadPublicFinancesFile);
+router.put('/publicFinances/file', isLogged(), publicFinancesControllers.newFile);
+router.put('/publicFinances/folder', isLogged(), publicFinancesControllers.newFolder);
+router.get('/publicFinances/moveFolder/up/:folderId', publicFinancesControllers.moveFolderUp);
+router.get('/publicFinances/moveFolder/down/:folderId', publicFinancesControllers.moveFolderDown);
+router.get('/publicFinances/moveFile/up/:fileId', publicFinancesControllers.moveFileUp);
+router.get('/publicFinances/moveFile/down/:fileId', publicFinancesControllers.moveFileDown);
+router.get('/publicFinances/checkUniqueDescription/:folderId', publicFinancesControllers.checkUniqueDescription);
+router.delete('/publicFinances/file/raw', publicFinancesControllers.deleteRawFile);
+router.delete('/publicFinances/file/:fileId', publicFinancesControllers.removePublicFinancesFile);
+router.delete('/publicFinances/folder/:folderId', publicFinancesControllers.removePublicFinancesFolder);
+router.post('/publicFinances/folder', isLogged(), publicFinancesControllers.editFolder);
 
 //events from Google Calendar API Service
 router.get('/eventsCalendar', eventsCalendarControllers.getEvents);

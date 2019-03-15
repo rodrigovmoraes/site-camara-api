@@ -23,6 +23,8 @@ var LegislativePropositionType = require('../models/LegislativePropositionType.j
 var LegislativePropositionTag = require('../models/LegislativePropositionTag.js').getModel();
 var LegislativePropositionFileAttachment = require('../models/LegislativePropositionFileAttachment.js').getModel();
 var LegislativePropositionRelationshipType = require('../models/LegislativePropositionRelationshipType.js').getModel();
+var PublicFinancesFolder = require('../models/PublicFinancesFolder.js').getModel();
+var PublicFinancesFile = require('../models/PublicFinancesFile.js').getModel();
 var async = require("async");
 var Util = require("../util/Utils.js");
 var fs = require("fs");
@@ -41,6 +43,31 @@ var _sampleDataCleaningActivated = false;
 ******************************* PRIVATE **************************************
 ***************************(LOADING FUNCTIONS)********************************
 /*****************************************************************************/
+var _createS3Bucket = function(done) {
+   //remove s3 bucket
+   var camaraApiConfig = config.get("CamaraApi");
+   var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+   winston.verbose("Creating s3 bucket ...");
+   //send the file to S3 server
+   s3Client
+   .bucketExists(camaraApiConfig.PublicFinances.s3Files.s3Bucket)
+   .then(function() {
+      winston.verbose("S3 bucket already exists.");
+      done(null, true);
+      return true;
+   }).catch(function() {
+      return s3Client
+             .makeBucket( camaraApiConfig.PublicFinances.s3Files.s3Bucket, 'us-east-1' );
+   }).then(function(notContinue) {
+      if(notContinue !== true) {
+         winston.verbose("S3 bucket created.");
+         done(null, true);
+      }
+   }).catch(function(err) {
+      winston.error("Error while creating s3 bucket in SampleDataLoader, err = [%s]", err);
+      done(err, false);
+   });
+}
 
 //load legislative proposition types
 var _loadLegislativePropositionTypes = function(done) {
@@ -541,11 +568,10 @@ var _loadLegislativePropositions = function(done) {
              }
              winston.verbose("Legislative propositions created.");
              done(null, true);
-          }).
-           catch(function(err) {
+          }).catch(function(err) {
              winston.error("Error while creating legislative propositions for testing in SampleDataLoader, err = [%s]", err);
              done(err, false);
-           });
+          });
 }
 
 //load licitacao categories
@@ -1238,53 +1264,59 @@ var _loadMenuAdmin = function(done) {
                         { title: 'Páginas',
                           icon: 'icon-globe',
                           sref: 'page.list',
-                          order: 10,
+                          order: 11,
                           isRoot: true
                         },{ title: 'Banners',
                           icon: 'icon-film',
                           sref: 'banner.list',
-                          order: 11,
+                          order: 12,
                           isRoot: true
                        },{ title: 'Destaques Cabeçalho',
                           icon: 'icon-energy',
                           sref: 'hotNews.list',
-                          order: 12,
+                          order: 13,
                           isRoot: true
                        },{ title: 'Destaques Rotativos',
                           icon: 'icon-star',
                           sref: 'breakingNews.list',
-                          order: 13,
+                          order: 14,
                           isRoot: true
                        },{ title: 'Destaques Fixos',
                           icon: 'icon-direction',
                           sref: 'fixedBreakingNews.list',
-                          order: 14,
+                          order: 15,
                           isRoot: true
                        },{ title: 'Eventos',
                           icon: 'icon-calendar',
                           sref: 'eventsCalendar.list',
-                          order: 15,
+                          order: 16,
                           isRoot: true
                        }, { title: 'Licitações',
                           icon: 'icon-basket',
                           sref: 'licitacao.list',
-                          order: 16,
+                          order: 17,
                           isRoot: true
                        }, { title: 'Proposituras',
                           icon: 'icon-graduation',
                           sref: 'legislativeProposition.list',
-                          order: 17,
+                          order: 18,
                           isRoot: true
                        },{ title: 'Classificações',
                           icon: 'icon-tag',
                           sref: 'legislativePropositionTags',
-                          order: 18,
+                          order: 19,
+                          isRoot: true
+                       },
+                       { title: 'Contas Públicas',
+                          icon: 'icon-calculator',
+                          sref: 'publicFinances.list',
+                          order: 20,
                           isRoot: true
                        },
                        { title: 'Login',
                           icon: 'icon-user',
                           sref: 'login',
-                          order: 19,
+                          order: 21,
                           isRoot: true
                         }];
    //do the job
@@ -1745,7 +1777,177 @@ var _loadRandomUsersTest = function(done) {
       }
        _createRandomUser(0);
    }).catch(function(err) {
-      winston.error("Error while getting creating random users in SampleDataLoader, err = [%s]", err);
+      winston.error("Error while creating random users in SampleDataLoader, err = [%s]", err);
+      done(err, false);
+   });
+}
+
+//Load random public finances structure for testing purposes
+var _loadRandomPublicFinances = function(done) {
+
+   //upload a file to S3
+   var uploadFile = function(fileName, folder) {
+      var publicFinancesFileTestBuffer = fs.readFileSync("./test/resources/public_finances_file.txt", { flag: 'r' });
+
+      //upload the file test to S3
+      var camaraApiConfig = config.get("CamaraApi");
+      var fileLength = publicFinancesFileTestBuffer.length;
+      var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+
+      //send the file to S3 server
+      return  s3Client.putObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
+                                  camaraApiConfig.PublicFinances.s3Files.s3Folder + folder + "/" + fileName,
+                                  publicFinancesFileTestBuffer,
+                                  publicFinancesFileTestBuffer.length,
+                                  "text/plain" )
+              .then(function(etag) {
+                 return fileLength;
+              });
+   }
+
+   //util function to create a folder
+   var createFolderStructure = async function(folder, users, folderPath, depth) {
+      var amountOfSubFolders = depth >= 3 ? 0 : Util.random(2, 2);
+      var amountOfFiles = Util.random(1, 1);
+      var i;
+      var subFolders = [];
+      var randomUser;
+      var randomUserIndex;
+      var randomName;
+      if(users && users.length > 0) {
+         randomUserIndex = Util.random(0, users.length - 1)
+         randomUser = users[randomUserIndex];
+      }
+      var randomDescription;
+
+      //create subfolders
+      for(i = 0; i < amountOfSubFolders; i++) {
+         //random user
+         randomUser = null;
+         randomUserIndex = -1;
+         if(users && users.length > 0) {
+            randomUserIndex = Util.random(0, users.length - 1)
+            randomUser = users[randomUserIndex];
+         }
+         //random description
+         randomDescription = loremIpsum({ count: 1,
+                                          units: 'sentences',
+                                          sentenceLowerBound: 2,
+                                          sentenceUpperBound: 4,
+                                          format: 'plain' });
+         if(randomDescription) {
+            randomDescription = randomDescription.substr(0, randomDescription.length - 1);
+         }
+         var publicFinancesSubFolder = new PublicFinancesFolder({
+            creationDate: Util.randomDateAndTimeInMinutes(2000,11,1, 2017,0,10),
+            creationUser: randomUser,
+            folder: folder,
+            order: i,
+            name: ( loremIpsum({ count: 1,
+                                 units: 'words',
+                                 format: 'plain' }) + "-" + i ).toLowerCase(),
+            description: randomDescription
+         });
+
+         //create new subfolder - synchronous way
+         var newSubFolder = await new Promise(function(resolve, reject) {
+            publicFinancesSubFolder
+            .save()
+            .then(function(newSubFolder) {
+               resolve(newSubFolder);
+            }).catch(function(err) {
+               winston.error("Error while creating folder for the random public finances structure in SampleDataLoader, err = [%s]", err);
+               reject(err);
+            });
+         });
+         subFolders.push({
+            'folder': newSubFolder,
+            'depth': depth + 1,
+            'folderPath': folderPath + "/" + newSubFolder.name
+         });
+      }
+      //create files
+      for(i = 0; i < amountOfFiles; i++) {
+         //random user
+         randomUser = null;
+         randomUserIndex = -1;
+         if(users && users.length > 0) {
+            randomUserIndex = Util.random(0, users.length - 1)
+            randomUser = users[randomUserIndex];
+         }
+         //random description
+         randomDescription = loremIpsum({
+                               count: 1,
+                               units: 'sentences',
+                               sentenceLowerBound: 2,
+                               sentenceUpperBound: 4,
+                               format: 'plain'
+                             });
+         randomName = ( loremIpsum({ count: 1,
+                                     units: 'words',
+                                     format: 'plain' }) + "-" + (amountOfSubFolders + i) + ".txt" ).toLowerCase();
+         if(randomDescription) {
+            randomDescription = randomDescription.substr(0, randomDescription.length - 1);
+         }
+         var publicFinancesFile;
+         await new Promise(function(resolve, reject) {
+            uploadFile(randomName, folderPath)
+            .then(function(fileSize) {
+               publicFinancesFile = new PublicFinancesFile ({
+                  creationDate: Util.randomDateAndTimeInMinutes(2000,11,1, 2017,0,10),
+                  length: fileSize,
+                  order: amountOfSubFolders + i,
+                  creationUser: randomUser,
+                  folder: folder,
+                  name: randomName,
+                  description: randomDescription,
+                  extension: 'txt',
+                  contentType: 'text/plain'
+               });
+               return publicFinancesFile.save();
+            }).then(function(newFile) {
+               resolve(newFile);
+            }).catch(function(err) {
+               winston.error("Error while creating file for the random public finances structure in SampleDataLoader, err = [%s]", err);
+               reject(err);
+            });
+         });
+      }
+      return Promise.resolve(subFolders);
+   }
+
+   var i = 0;
+   var users = null;
+   User.find({})
+   .then(async function(pusers) {
+      users = pusers;
+      var queue = [null]; //folders to be processed, null is the root
+
+      winston.verbose("Creating random public finances structure ...");
+
+      //process (create the structure of the folder) the folders in the queue
+      while(queue.length > 0) {
+         var currentFolder = queue.shift();
+         if(currentFolder !== undefined) {
+            var subfolders = await createFolderStructure (
+               currentFolder ? currentFolder.folder : null,
+               users,
+               currentFolder ? currentFolder.folderPath : "/",
+               currentFolder ? currentFolder.depth : 0
+            );
+            //put the subfolder in the queue
+            if(subfolders.length > 0) {
+               for(i = 0; i < subfolders.length; i++) {
+                  queue.push(subfolders[i]);
+               }
+            }
+         }
+      }
+
+      winston.verbose("Random public finances structure created.");
+      done(null, true);
+   }).catch(function(err) {
+      winston.error("Error while creating random public finances structure in SampleDataLoader, err = [%s]", err);
       done(err, false);
    });
 }
@@ -1754,6 +1956,62 @@ var _loadRandomUsersTest = function(done) {
 ******************************* PRIVATE **************************************
 **************************(CLEANING FUNCTIONS)********************************
 /*****************************************************************************/
+var _cleanS3Bucket = function(done) {
+   //remove s3 bucket
+   var camaraApiConfig = config.get("CamaraApi");
+   var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+   var i;
+   winston.verbose("Cleaning s3 bucket ...");
+
+   s3Client
+   .bucketExists(camaraApiConfig.PublicFinances.s3Files.s3Bucket)
+   .then(function() {
+      //clean s3 bucket
+      var listObjectsStream = s3Client.listObjects( camaraApiConfig.PublicFinances.s3Files.s3Bucket, '', true );
+      var s3Objects = [];
+
+      listObjectsStream.on('data', function(obj) {
+         s3Objects.push(obj.name);
+      });
+
+      listObjectsStream.on('error', function(err) {
+         winston.error("Error while cleaning s3 bucket in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      });
+
+      listObjectsStream.on('end', async function() {
+         for (i = 0; i < s3Objects.length; i++) {
+            await s3Client.removeObject(camaraApiConfig.PublicFinances.s3Files.s3Bucket, s3Objects[i]);
+         }
+         winston.verbose("S3 bucket cleaned.");
+         done(null, 1);
+      })
+   }).catch(function() {
+      //the bucket doesn't exist, then nothing to be cleared
+      winston.verbose("S3 bucket doesn't exist.");
+      done(null, 1);
+   });
+}
+
+var _removePublicFinances = function(done) {
+   PublicFinancesFile.remove({}, function(err) {
+      if(err) {
+         winston.error("Error while removing files of random public finances in SampleDataLoader, err = [%s]", err);
+         done(err, false);
+      } else {
+         PublicFinancesFolder.remove({}, function(err) {
+            if(err) {
+               winston.error("Error while removing folders of random public finances in SampleDataLoader, err = [%s]", err);
+               done(err, false);
+            } else {
+               winston.verbose("Public finance structure removed");
+               done(null, true);
+            }
+         });
+      }
+   });
+}
+
 var _removeFBreakingNews = function(done) {
    FBreakingNews.remove({}, function(err) {
       if(err) {
@@ -2011,6 +2269,7 @@ var _removeLegislativePropositionsRemoved = function(done) {
 //put the desired sample data routines here, they will be executed in the
 //order by this sample data generator
 var _loadRoutines = [
+   _createS3Bucket,
    _loadLegislativePropositionTypes,
    _loadLegislativePropositionTags,
    _loadLegislativePropositionRelationshipType,
@@ -2028,12 +2287,15 @@ var _loadRoutines = [
    _loadUserGroups,
    _loadUserTest,
    _loadRandomUsersTest,
-   _loadLegislativePropositions
+   _loadLegislativePropositions,
+   _loadRandomPublicFinances
 ];
 
 //put the desired sample data clear routines here, they will be executed in the
 //order by this sample data generator to clear data generated before
 var _clearRoutines = [
+   _cleanS3Bucket,
+   _removePublicFinances,
    _removeLegislativePropositions,
    _removeFBreakingNews,
    _removeBreakingNews,
