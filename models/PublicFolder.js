@@ -10,11 +10,11 @@ var _connection;
 var _mongoose;
 var _model;
 var _modelInitialized = false;
-var _modelName = 'PublicFinancesFolder';
+var _modelName = 'PublicFolder';
 
 var _createModelSchema = function(mongoose) {
-   //publicFinancesFolder schema definition
-   var publicFinancesFolderSchema = new mongoose.Schema({
+   //publicFolder schema definition
+   var publicFolderSchema = new mongoose.Schema({
      creationDate: {
         type: Date,
         required: true,
@@ -28,7 +28,7 @@ var _createModelSchema = function(mongoose) {
      },
      folder : {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'PublicFinancesFolder',
+        ref: 'PublicFolder',
         required: false,
         unique: false
      },
@@ -56,7 +56,7 @@ var _createModelSchema = function(mongoose) {
      }
    });
 
-   return publicFinancesFolderSchema;
+   return publicFolderSchema;
 }
 
 /*****************************************************************************

@@ -318,6 +318,79 @@ module.exports.getLastLicitacoesEvents = function(req, res, next) {
       });
 }
 
+//return all licitacoes events, for indexing purpose
+module.exports.getAllLicitacoesEvents = function(req, res, next) {
+   //pagination options
+   var page = req.query.page ? parseInt(req.query.page) : 1;
+   var pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 10;
+
+   return LicitacaoEvent
+            .aggregate(
+               [
+                  { $lookup: {
+                        from: "licitacaos",
+                        localField: "licitacao",
+                        foreignField: "_id",
+                        as: "licitacao"
+                    }
+                  },
+                  { $match : { "licitacao.state" : 1 } },
+                  { $count: "count" }
+               ]
+            ).then(function(result) {
+               var count = result && result.length && result.length > 0 ? result[0].count : 0;
+               if (count > 0) {
+                  if (page * pageSize - pageSize >= count) {
+                     page = Math.ceil(count / pageSize); //last page
+                  }
+                  return LicitacaoEvent
+                           .aggregate(
+                              [
+                                 { $lookup: {
+                                       from: "licitacaos",
+                                       localField: "licitacao",
+                                       foreignField: "_id",
+                                       as: "licitacao"
+                                   }
+                                 },
+                                 { $match : { "licitacao.state" : 1 } },
+                                 { $skip : page * pageSize - pageSize },
+                                 { $limit : pageSize },
+                                 { $unwind : "$licitacao" },
+                                 { $lookup: {
+                                       from: "licitacaocategories",
+                                       localField: "licitacao.category",
+                                       foreignField: "_id",
+                                       as: "licitacao.category"
+                                   }
+                                 },
+                                 { $unwind : "$licitacao.category" },
+                              ]
+                           ).then(function(licitacoesEvents) {
+                              var i;
+                              return {
+                                 "licitacoesEvents" : licitacoesEvents,
+                                 "totalLength": count,
+                                 "page": page,
+                                 "pageSize": pageSize
+                              }
+                           });
+               } else {
+                  return {
+                     "licitacoesEvents" : [],
+                     "totalLength": 0,
+                     "page": 1,
+                     "pageSize": 1
+                  }
+               }
+            }).then(function(result) {
+               Utils.sendJSONresponse(res, 200, result);
+            }).catch(function(err) {
+               winston.error("Error while getting licitacoes events, err = [%s]", err);
+               Utils.next(400, err, next);
+            });
+}
+
 module.exports.getLicitacao = function(req, res, next) {
    if(req.params.licitacaoId) {
       Licitacao.findOne({ _id: LicitacaoModule.getMongoose().Types.ObjectId(req.params.licitacaoId) })
@@ -492,6 +565,7 @@ module.exports.newLicitacaoEvent = function(req, res, next) {
                         var licitacaoEvent = new LicitacaoEvent();
                         licitacaoEvent.description = licitacaoEventJSON.description;
                         licitacaoEvent.date = licitacaoEventJSON.date;
+                        licitacaoEvent.creationDate = new Date();
                         licitacaoEvent.file = licitacaoEventJSON.file;
                         licitacaoEvent.originalFilename = licitacaoEventJSON.originalFilename;
                         licitacaoEvent.contentType = licitacaoEventJSON.contentType;
@@ -547,6 +621,7 @@ module.exports.editLicitacaoEvent = function(req, res, next) {
          if(licitacaoEvent) {
             licitacaoEvent.description = licitacaoEventJSON.description;
             licitacaoEvent.date = licitacaoEventJSON.date;
+            licitacaoEvent.changedDate = new Date();
             licitacaoEvent.file = licitacaoEventJSON.file;
             licitacaoEvent.originalFilename = licitacaoEventJSON.originalFilename;
             licitacaoEvent.contentType = licitacaoEventJSON.contentType;

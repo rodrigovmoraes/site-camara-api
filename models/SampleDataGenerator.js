@@ -23,8 +23,8 @@ var LegislativePropositionType = require('../models/LegislativePropositionType.j
 var LegislativePropositionTag = require('../models/LegislativePropositionTag.js').getModel();
 var LegislativePropositionFileAttachment = require('../models/LegislativePropositionFileAttachment.js').getModel();
 var LegislativePropositionRelationshipType = require('../models/LegislativePropositionRelationshipType.js').getModel();
-var PublicFinancesFolder = require('../models/PublicFinancesFolder.js').getModel();
-var PublicFinancesFile = require('../models/PublicFinancesFile.js').getModel();
+var PublicFolder = require('../models/PublicFolder.js').getModel();
+var PublicFile = require('../models/PublicFile.js').getModel();
 var async = require("async");
 var Util = require("../util/Utils.js");
 var fs = require("fs");
@@ -50,14 +50,14 @@ var _createS3Bucket = function(done) {
    winston.verbose("Creating s3 bucket ...");
    //send the file to S3 server
    s3Client
-   .bucketExists(camaraApiConfig.PublicFinances.s3Files.s3Bucket)
+   .bucketExists(camaraApiConfig.PublicFiles.s3Files.s3Bucket)
    .then(function() {
       winston.verbose("S3 bucket already exists.");
       done(null, true);
       return true;
    }).catch(function() {
       return s3Client
-             .makeBucket( camaraApiConfig.PublicFinances.s3Files.s3Bucket, 'us-east-1' );
+             .makeBucket( camaraApiConfig.PublicFiles.s3Files.s3Bucket, 'us-east-1' );
    }).then(function(notContinue) {
       if(notContinue !== true) {
          winston.verbose("S3 bucket created.");
@@ -372,7 +372,7 @@ var _loadLegislativePropositions = function(done) {
 
                var legislativePropositions = [];
                var i;
-               for(i = 1; i <= 1000; i++) {
+               for(i = 1; i <= 2621; i++) {
 
                   var consolidated = Util.random(0, 1); //0 - not consolidated, 1 - consolidated
                   var changed = Util.random(0, 1); //0 - not consolidated, 1 - consolidated
@@ -604,6 +604,8 @@ var _loadLicitacoes = function(done) {
          var licitacaoEventModel = new LicitacaoEvent();
          licitacaoEventModel.description = licitacaoEvent.description;
          licitacaoEventModel.date = licitacaoEvent.date;
+         licitacaoEventModel.creationDate = licitacaoEvent.creationDate;
+         licitacaoEventModel.changedDate = licitacaoEvent.changedDate;
          licitacaoEventModel.file = licitacaoEvent.file;
          licitacaoEventModel.originalFilename = licitacaoEvent.originalFilename;
          licitacaoEventModel.contentType = licitacaoEvent.contentType;
@@ -673,10 +675,20 @@ var _loadLicitacoes = function(done) {
                 var j;
                 if(licitacao.publicationDate !== null) {
                    for(j = 0; j < eventsAmount; j++) {
+                      var changedEvent = Util.random(0, 1);
+
                       var dateEvent = new Date(licitacao.publicationDate.getTime() + Util.random(1, 7 * 86400) * 1000);
+                      var creationDateEvent = dateEvent;
+                      //changedDate
+                      var changedDateEvent = changedEvent === 0
+                                             ? null
+                                             : (  new Date(creationDateEvent.getTime() + Util.random(1, 7 * 86400) * 1000) );
+
                       var savedLicitacaoEvent = await _insertLicitacaoEvent({
                         'description': loremIpsum({ count: Util.random(2, 6) , units: 'words' }),
                         'date': new Date(licitacao.publicationDate.getTime() + Util.random(1, 7 * 86400) * 1000),
+                        'creationDate': creationDateEvent,
+                        'changedDate': changedDateEvent,
                         'file': licitacaoEventTestFilename,
                         'originalFilename': 'original_' + licitacaoEventTestFilename,
                         'contentType': 'application/pdf',
@@ -975,7 +987,7 @@ var _loadNewsItems = function(done) {
          //the upload has been successfully completed
          //then insert the news
          var i;
-         for (i = 0; i < 1000; i++) {
+         for (i = 0; i < 1627; i++) {
             var newsItem = {};
             var publish = Util.random(0, 1) ? true : false;
             var futurePublication = publish ? ( Util.random(0, 1) ? true : false ) : false;
@@ -1034,7 +1046,7 @@ var _loadPages = function(done) {
 
    //insert the pages
    var i;
-   for (i = 0; i < 1000; i++) {
+   for (i = 0; i < 1233; i++) {
       var page = {};
       var changed = Util.random(0, 1) ? true : false;
       var now = new Date();
@@ -1307,16 +1319,22 @@ var _loadMenuAdmin = function(done) {
                           order: 19,
                           isRoot: true
                        },
-                       { title: 'Contas Públicas',
+                       {  title: 'Arquivos Públicos',
                           icon: 'icon-calculator',
-                          sref: 'publicFinances.list',
+                          sref: 'publicFiles.list',
                           order: 20,
                           isRoot: true
+                       },
+                       { title: 'Índice',
+                         icon: 'icon-magnifier',
+                         sref: 'indexer',
+                         order: 21,
+                         isRoot: true
                        },
                        { title: 'Login',
                           icon: 'icon-user',
                           sref: 'login',
-                          order: 21,
+                          order: 22,
                           isRoot: true
                         }];
    //do the job
@@ -1782,23 +1800,23 @@ var _loadRandomUsersTest = function(done) {
    });
 }
 
-//Load random public finances structure for testing purposes
-var _loadRandomPublicFinances = function(done) {
+//Load random public files structure for testing purposes
+var _loadRandomPublicFiles = function(done) {
 
    //upload a file to S3
    var uploadFile = function(fileName, folder) {
-      var publicFinancesFileTestBuffer = fs.readFileSync("./test/resources/public_finances_file.txt", { flag: 'r' });
+      var publicFilesFileTestBuffer = fs.readFileSync("./test/resources/public_files_file.txt", { flag: 'r' });
 
       //upload the file test to S3
       var camaraApiConfig = config.get("CamaraApi");
-      var fileLength = publicFinancesFileTestBuffer.length;
+      var fileLength = publicFilesFileTestBuffer.length;
       var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
 
       //send the file to S3 server
-      return  s3Client.putObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
-                                  camaraApiConfig.PublicFinances.s3Files.s3Folder + folder + "/" + fileName,
-                                  publicFinancesFileTestBuffer,
-                                  publicFinancesFileTestBuffer.length,
+      return  s3Client.putObject( camaraApiConfig.PublicFiles.s3Files.s3Bucket,
+                                  camaraApiConfig.PublicFiles.s3Files.s3Folder + folder + "/" + fileName,
+                                  publicFilesFileTestBuffer,
+                                  publicFilesFileTestBuffer.length,
                                   "text/plain" )
               .then(function(etag) {
                  return fileLength;
@@ -1838,7 +1856,7 @@ var _loadRandomPublicFinances = function(done) {
          if(randomDescription) {
             randomDescription = randomDescription.substr(0, randomDescription.length - 1);
          }
-         var publicFinancesSubFolder = new PublicFinancesFolder({
+         var publicFilesSubFolder = new PublicFolder({
             creationDate: Util.randomDateAndTimeInMinutes(2000,11,1, 2017,0,10),
             creationUser: randomUser,
             folder: folder,
@@ -1851,12 +1869,12 @@ var _loadRandomPublicFinances = function(done) {
 
          //create new subfolder - synchronous way
          var newSubFolder = await new Promise(function(resolve, reject) {
-            publicFinancesSubFolder
+            publicFilesSubFolder
             .save()
             .then(function(newSubFolder) {
                resolve(newSubFolder);
             }).catch(function(err) {
-               winston.error("Error while creating folder for the random public finances structure in SampleDataLoader, err = [%s]", err);
+               winston.error("Error while creating folder for the random public files structure in SampleDataLoader, err = [%s]", err);
                reject(err);
             });
          });
@@ -1889,11 +1907,11 @@ var _loadRandomPublicFinances = function(done) {
          if(randomDescription) {
             randomDescription = randomDescription.substr(0, randomDescription.length - 1);
          }
-         var publicFinancesFile;
+         var publicFile;
          await new Promise(function(resolve, reject) {
             uploadFile(randomName, folderPath)
             .then(function(fileSize) {
-               publicFinancesFile = new PublicFinancesFile ({
+               publicFile = new PublicFile ({
                   creationDate: Util.randomDateAndTimeInMinutes(2000,11,1, 2017,0,10),
                   length: fileSize,
                   order: amountOfSubFolders + i,
@@ -1904,11 +1922,11 @@ var _loadRandomPublicFinances = function(done) {
                   extension: 'txt',
                   contentType: 'text/plain'
                });
-               return publicFinancesFile.save();
+               return publicFile.save();
             }).then(function(newFile) {
                resolve(newFile);
             }).catch(function(err) {
-               winston.error("Error while creating file for the random public finances structure in SampleDataLoader, err = [%s]", err);
+               winston.error("Error while creating file for the random public files structure in SampleDataLoader, err = [%s]", err);
                reject(err);
             });
          });
@@ -1923,7 +1941,7 @@ var _loadRandomPublicFinances = function(done) {
       users = pusers;
       var queue = [null]; //folders to be processed, null is the root
 
-      winston.verbose("Creating random public finances structure ...");
+      winston.verbose("Creating random public files structure ...");
 
       //process (create the structure of the folder) the folders in the queue
       while(queue.length > 0) {
@@ -1944,10 +1962,10 @@ var _loadRandomPublicFinances = function(done) {
          }
       }
 
-      winston.verbose("Random public finances structure created.");
+      winston.verbose("Random public files structure created.");
       done(null, true);
    }).catch(function(err) {
-      winston.error("Error while creating random public finances structure in SampleDataLoader, err = [%s]", err);
+      winston.error("Error while creating random public files structure in SampleDataLoader, err = [%s]", err);
       done(err, false);
    });
 }
@@ -1964,10 +1982,10 @@ var _cleanS3Bucket = function(done) {
    winston.verbose("Cleaning s3 bucket ...");
 
    s3Client
-   .bucketExists(camaraApiConfig.PublicFinances.s3Files.s3Bucket)
+   .bucketExists(camaraApiConfig.PublicFiles.s3Files.s3Bucket)
    .then(function() {
       //clean s3 bucket
-      var listObjectsStream = s3Client.listObjects( camaraApiConfig.PublicFinances.s3Files.s3Bucket, '', true );
+      var listObjectsStream = s3Client.listObjects( camaraApiConfig.PublicFiles.s3Files.s3Bucket, '', true );
       var s3Objects = [];
 
       listObjectsStream.on('data', function(obj) {
@@ -1981,7 +1999,7 @@ var _cleanS3Bucket = function(done) {
 
       listObjectsStream.on('end', async function() {
          for (i = 0; i < s3Objects.length; i++) {
-            await s3Client.removeObject(camaraApiConfig.PublicFinances.s3Files.s3Bucket, s3Objects[i]);
+            await s3Client.removeObject(camaraApiConfig.PublicFiles.s3Files.s3Bucket, s3Objects[i]);
          }
          winston.verbose("S3 bucket cleaned.");
          done(null, 1);
@@ -1993,15 +2011,15 @@ var _cleanS3Bucket = function(done) {
    });
 }
 
-var _removePublicFinances = function(done) {
-   PublicFinancesFile.remove({}, function(err) {
+var _removePublicFiles = function(done) {
+   PublicFile.remove({}, function(err) {
       if(err) {
-         winston.error("Error while removing files of random public finances in SampleDataLoader, err = [%s]", err);
+         winston.error("Error while removing files of random public files in SampleDataLoader, err = [%s]", err);
          done(err, false);
       } else {
-         PublicFinancesFolder.remove({}, function(err) {
+         PublicFolder.remove({}, function(err) {
             if(err) {
-               winston.error("Error while removing folders of random public finances in SampleDataLoader, err = [%s]", err);
+               winston.error("Error while removing folders of random public files in SampleDataLoader, err = [%s]", err);
                done(err, false);
             } else {
                winston.verbose("Public finance structure removed");
@@ -2288,14 +2306,14 @@ var _loadRoutines = [
    _loadUserTest,
    _loadRandomUsersTest,
    _loadLegislativePropositions,
-   _loadRandomPublicFinances
+   _loadRandomPublicFiles
 ];
 
 //put the desired sample data clear routines here, they will be executed in the
 //order by this sample data generator to clear data generated before
 var _clearRoutines = [
    _cleanS3Bucket,
-   _removePublicFinances,
+   _removePublicFiles,
    _removeLegislativePropositions,
    _removeFBreakingNews,
    _removeBreakingNews,
@@ -2358,7 +2376,7 @@ module.exports.setSampleDataCleaningActivated = function(sampleDataCleaningActiv
 //execute the sample data routines in order to build a data sample
 //for testing purposes
 module.exports.load = function() {
-   _clear(function(){
+   _clear(function() {
       if(_sampleDataGenerationActivated) {
          winston.verbose("========== Generating sample data ...");
 

@@ -25,6 +25,16 @@ var _createModelSchema = function(mongoose) {
         required: false,
         unique: false
      },
+     creationDate: {
+        type: Date,
+        required: true,
+        unique: false
+     },     
+     changedDate: {
+        type: Date,
+        required: false,
+        unique: false
+     },
      file: {
         type: String,
         required: true,

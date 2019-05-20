@@ -10,11 +10,11 @@ var _connection;
 var _mongoose;
 var _model;
 var _modelInitialized = false;
-var _modelName = 'PublicFinancesFile';
+var _modelName = 'PublicFile';
 
 var _createModelSchema = function(mongoose) {
-   //publicFinancesFile schema definition
-   var publicFinancesFileSchema = new mongoose.Schema({
+   //publicFile schema definition
+   var publicFileSchema = new mongoose.Schema({
      creationDate: { //creation date
         type: Date,
         required: true,
@@ -45,7 +45,7 @@ var _createModelSchema = function(mongoose) {
      },
      folder : { //who create or who last modified
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'PublicFinancesFolder',
+        ref: 'PublicFolder',
         required: false,
         unique: false
      },
@@ -71,7 +71,7 @@ var _createModelSchema = function(mongoose) {
      }
    });
 
-   return publicFinancesFileSchema;
+   return publicFileSchema;
 }
 
 /*****************************************************************************

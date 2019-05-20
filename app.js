@@ -4,11 +4,9 @@
 ******************************************************************************/
 require('dotenv').load();
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var fileUpload = require('express-fileupload');
 var bodyParser = require('body-parser');
-var fs = require('fs');
 var config = require('config');
 var winston = require('winston');
 var cors = require('cors');
@@ -61,9 +59,8 @@ var LegislativePropositionRelationshipType = require('./models/LegislativePropos
 var LegislativePropositionTag = require('./models/LegislativePropositionTag.js');
 var LegislativePropositionType = require('./models/LegislativePropositionType.js');
 var LegislativePropositionRemoved = require('./models/LegislativePropositionRemoved.js');
-var PublicFinancesFile = require('./models/PublicFinancesFile.js');
-var PublicFinancesFolder = require('./models/PublicFinancesFolder.js');
-
+var PublicFile = require('./models/PublicFile.js');
+var PublicFolder = require('./models/PublicFolder.js');
 
 DbModule.setDbURI(camaraApiConfig.Models.Db.dbURI);
 DbModule.useMock(camaraApiConfig.Models.Db.useMock);
@@ -129,12 +126,12 @@ DbModule.connect(function(mongoose, connection) {
    //LegislativePropositionRemoved Model
    LegislativePropositionRemoved.setMongoose(mongoose);
    LegislativePropositionRemoved.setConnection(connection);
-   //PublicFinancesFile Model
-   PublicFinancesFile.setMongoose(mongoose);
-   PublicFinancesFile.setConnection(connection);
-   //PublicFinancesFolder Model
-   PublicFinancesFolder.setMongoose(mongoose);
-   PublicFinancesFolder.setConnection(connection);
+   //PublicFile Model
+   PublicFile.setMongoose(mongoose);
+   PublicFile.setConnection(connection);
+   //PublicFolder Model
+   PublicFolder.setMongoose(mongoose);
+   PublicFolder.setConnection(connection);
    //sample data generator
    var SampleDataGenerator = require('./models/SampleDataGenerator.js');
    SampleDataGenerator.setSampleDataGenerationActivated(camaraApiConfig.Models.SampleDataGenerator.activated);

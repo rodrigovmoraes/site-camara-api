@@ -3,10 +3,10 @@
 ******************************* (LIBS MODULES) *******************************
 /*****************************************************************************/
 var winston = require('winston');
-var PublicFinancesFileModule = require('../models/PublicFinancesFile.js');
-var PublicFinancesFolderModule = require('../models/PublicFinancesFolder.js');
-var PublicFinancesFile = PublicFinancesFileModule.getModel();
-var PublicFinancesFolder = PublicFinancesFolderModule.getModel();
+var PublicFileModule = require('../models/PublicFile.js');
+var PublicFolderModule = require('../models/PublicFolder.js');
+var PublicFile = PublicFileModule.getModel();
+var PublicFolder = PublicFolderModule.getModel();
 var Utils = require('../util/Utils.js');
 var _ = require('lodash');
 var Minio = require('minio');
@@ -18,7 +18,7 @@ var config = require('config');
 //find a folder by id
 var _findFolderById = function (folderId) {
    return new Promise(function (resolve, reject) {
-      return PublicFinancesFolder
+      return PublicFolder
       .findById({ _id: folderId })
       .then(function(folder) {
          resolve(folder);
@@ -31,7 +31,7 @@ var _findFolderById = function (folderId) {
 //find a folder by properties
 var _findOneFolder = function (properties) {
    return new Promise(function (resolve, reject) {
-      return PublicFinancesFolder
+      return PublicFolder
       .findOne(properties)
       .then(function(folder) {
          resolve(folder);
@@ -44,7 +44,7 @@ var _findOneFolder = function (properties) {
 //find a folder by properties
 var _findOneFile = function (properties) {
    return new Promise(function (resolve, reject) {
-      return PublicFinancesFile
+      return PublicFile
       .findOne(properties)
       .then(function(folder) {
          resolve(folder);
@@ -59,14 +59,14 @@ var _findOneFileOrFolder = function (properties) {
    var notContinue = true;
 
    return new Promise(function (resolve, reject) {
-      return PublicFinancesFile
+      return PublicFile
       .findOne(properties)
       .then(function(file) {
          if (file) {
             resolve(file);
             return notContinue;
          } else {
-            return PublicFinancesFolder.findOne(properties);
+            return PublicFolder.findOne(properties);
          }
       }).then(function(folder) {
          if(folder !== notContinue) {
@@ -85,13 +85,13 @@ var _countObjectsInFolder = function (folderId) {
    var folderAmount;
 
    return new Promise(function (resolve, reject) {
-      return PublicFinancesFile
+      return PublicFile
                .count({
-                  folder: folderId ? PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) : null
+                  folder: folderId ? PublicFolderModule.getMongoose().Types.ObjectId(folderId) : null
                }).then(function(pFileAmount) {
                   fileAmount = pFileAmount ? pFileAmount : 0;
-                  return PublicFinancesFolder.count({
-                           folder: folderId ? PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) : null
+                  return PublicFolder.count({
+                           folder: folderId ? PublicFolderModule.getMongoose().Types.ObjectId(folderId) : null
                          });
                }).then(function(pFolderAmount) {
                   folderAmount = pFolderAmount ? pFolderAmount : 0;
@@ -148,21 +148,40 @@ var _folderPathAsString = function(folderPath) {
    return sfolderPath;
 }
 
+//Returns a string representation of the folderPath
+//using the description field
+//folderPath is an array
+var _folderPathDescriptionAsString = function(folderPath) {
+   var k;
+   var sfolderPath = "";
+   if (folderPath) {
+      for(k = 0; k < folderPath.length; k++) {
+         if (k === 0) {
+            sfolderPath += folderPath[k].description;
+         } else {
+            sfolderPath += " > " + folderPath[k].description;
+         }
+
+      }
+   }
+   return sfolderPath;
+}
+
 //find elements in a folder with given description (insensitive case)
 var findElementsByDescriptionIC = function (folderId, description) {
    var folders = [];
    var files = [];
 
-   return PublicFinancesFolder
+   return PublicFolder
          .find({
-            "folder": folderId ? PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) : null,
+            "folder": folderId ? PublicFolderModule.getMongoose().Types.ObjectId(folderId) : null,
             "description" : { $regex : new RegExp("^" + description + "$", "i") }
          }).then(function (pFolders) {
             if (pFolders) {
                folders = pFolders;
             }
-            return PublicFinancesFile.find({
-               "folder": folderId ? PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) : null,
+            return PublicFile.find({
+               "folder": folderId ? PublicFolderModule.getMongoose().Types.ObjectId(folderId) : null,
                "description" : { $regex : new RegExp("^" + description + "$", "i") }
             });
          }).then(function (pFiles) {
@@ -202,13 +221,13 @@ var _findFilesAndFolders = function (properties) {
    var elements = [];
 
    return new Promise(function (resolve, reject) {
-      return PublicFinancesFile
+      return PublicFile
       .find(properties)
       .then(function(pFiles) {
          if (pFiles) {
             files = pFiles;
          }
-         return PublicFinancesFolder.find(properties);
+         return PublicFolder.find(properties);
       }).then(function(pFolders) {
          if (pFolders) {
             folders = pFolders;
@@ -228,7 +247,7 @@ var _updateFolderAndFilesOrders = function(folderId, fromOrder) {
    var updatesFoldersOrders = [];
 
    return _findFilesAndFolders({
-      folder:  folderId ? PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) : null,
+      folder:  folderId ? PublicFolderModule.getMongoose().Types.ObjectId(folderId) : null,
       order: { $gt: fromOrder }
    }).then(function (elements) {
       var k;
@@ -258,12 +277,12 @@ var _updateFolderAndFilesOrders = function(folderId, fromOrder) {
 
       //for folders
       if (updatesFoldersOrders.length > 0) {
-         return PublicFinancesFolder.bulkWrite(updatesFoldersOrders);
+         return PublicFolder.bulkWrite(updatesFoldersOrders);
       }
    }).then(function(){
       //and for files
       if (updatesFilesOrders.length > 0) {
-         return PublicFinancesFile.bulkWrite(updatesFilesOrders);
+         return PublicFile.bulkWrite(updatesFilesOrders);
       }
    });
 }
@@ -290,7 +309,7 @@ module.exports.listFolderContents = async function(req, res, next) {
       try {
          folder = await _findFolderById(folderId);
       } catch(err) {
-         winston.error("Error while listing folder content in Public Finances, err = [%s]", err);
+         winston.error("Error while listing folder content in Public Files, err = [%s]", err);
          Utils.next(400, err, next);
          return;
       }
@@ -305,7 +324,7 @@ module.exports.listFolderContents = async function(req, res, next) {
    }
 
    //list the subfolders
-   return PublicFinancesFolder
+   return PublicFolder
          .find({
             'folder': folder
          })
@@ -317,7 +336,7 @@ module.exports.listFolderContents = async function(req, res, next) {
                }
             }
             //list the files
-            return PublicFinancesFile
+            return PublicFile
                    .find({ 'folder': folder })
                    .populate('creationUser', 'username name');
          }).then(function(pfiles) {
@@ -333,9 +352,96 @@ module.exports.listFolderContents = async function(req, res, next) {
                objects: objects
             });
          }).catch(function(err) {
-            winston.error("Error while listing folder content in Public Finances, err = [%s]", err);
+            winston.error("Error while listing folder content in Public Files, err = [%s]", err);
             Utils.next(400, err, next);
          });
+}
+
+//return all public files, for indexing purpose
+module.exports.getAllFiles = async function(req, res, next) {
+   //pagination options
+   var page = req.query.page ? parseInt(req.query.page) : 1;
+   var pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 10;
+
+   return PublicFile
+            .count({})
+            .then(function(count) {
+               if (count > 0) {
+                  if (page * pageSize - pageSize >= count) {
+                     page = Math.ceil(count / pageSize); //last page
+                  }
+                  return PublicFile
+                           .find()
+                           .sort({ creationDate: -1 })
+                           .skip(page * pageSize - pageSize)
+                           .limit(pageSize)
+                           .then(function(publicFiles) {
+                              return {
+                                 "publicFiles" : publicFiles,
+                                 "totalLength": count,
+                                 "page": page,
+                                 "pageSize": pageSize
+                              }
+                           });
+               } else {
+                  return {
+                     "publicFiles" : [],
+                     "totalLength": 0,
+                     "page": 1,
+                     "pageSize": 1
+                  }
+               }
+            }).then(function(result) {
+               Utils.sendJSONresponse(res, 200, result);
+            }).catch(function(err) {
+               winston.error("Error while getting public files, err = [%s]", err);
+               Utils.next(400, err, next);
+            });
+}
+
+module.exports.getMetaFile = async function(req, res, next) {
+   var camaraApiConfig = config.get("CamaraApi");
+   var publicFile;
+   var folderPath;
+   var notContinue = true;
+
+   if(req.params.fileId) {
+      PublicFile
+            .findOne({ _id: PublicFileModule.getMongoose().Types.ObjectId(req.params.fileId) })
+            .then( function(ppublicFile) {
+               if (ppublicFile) {
+                  publicFile = ppublicFile;
+                  if (publicFile.folder) {
+                     return _getFolderPath(publicFile.folder);
+                  } else {
+                     //the file is in the root folder
+                     return [{ name: '' }]; //just the root folder in the path
+                  }
+               } else {
+                  Utils.sendJSONresponse(res, 400, { message: 'public file not found' });
+                  return notContinue;
+               }
+            }).then(function(folderPath) {
+               if (folderPath === notContinue) {
+                  return;
+               }
+               if(!folderPath) {
+                  Utils.sendJSONresponse(res, 400, { message: 'parent folder of the file not found' });
+                  return;
+               }
+
+               var sfolderPath = _folderPathDescriptionAsString(folderPath);
+               Utils.sendJSONresponse(res, 200, {
+                  'metaFileInfo': publicFile,
+                  'folderPath': sfolderPath
+               });
+            }).catch(function(err) {
+               winston.error("Error while downloading public file, err = [%s]", err);
+               Utils.next(400, err, next);
+            });
+   } else {
+      Utils.sendJSONresponse(res, 400, { message: 'undefined public file id' });
+   }
 }
 
 module.exports.getAmountOfElements = async function(req, res, next) {
@@ -354,7 +460,7 @@ module.exports.getAmountOfElements = async function(req, res, next) {
            findFolderOrRootFolderResult) {
          return _countObjectsInFolder(folderId);
       } else {
-         Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+         Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
          return notContinue;
       }
    }).then(function(amount) {
@@ -364,7 +470,7 @@ module.exports.getAmountOfElements = async function(req, res, next) {
          });
       }
    }).catch( function(err) {
-      winston.error("Error while listing folder content in Public Finances, err = [%s]", err);
+      winston.error("Error while listing folder content in Public Files, err = [%s]", err);
       Utils.next(400, err, next);
    });
 }
@@ -388,10 +494,10 @@ module.exports.getFolderPath = async function(req, res, next) {
                'path': path
             });
          } else {
-            Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+            Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
          }
       }).catch(function(err) {
-         winston.error("Error while getting folder path in Public Finances, err = [%s]", err);
+         winston.error("Error while getting folder path in Public Files, err = [%s]", err);
          Utils.next(400, err, next);
          return;
       });
@@ -402,30 +508,30 @@ module.exports.getFolderPath = async function(req, res, next) {
 
 module.exports.moveFolderUp = function(req, res, next) {
    var folderId = null;
-   var publicFinancesFolder = null;
+   var publicFolder = null;
    if (req.params.folderId) {
       folderId = req.params.folderId;
-      return PublicFinancesFolder //first, find the folder
-            .findOne({ _id: PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) })
-            .then( function(ppublicFinancesFolder) {
-               if (ppublicFinancesFolder) {
+      return PublicFolder //first, find the folder
+            .findOne({ _id: PublicFolderModule.getMongoose().Types.ObjectId(folderId) })
+            .then( function(ppublicFolder) {
+               if (ppublicFolder) {
                   //found the folder
-                  publicFinancesFolder = ppublicFinancesFolder;
-                  if(publicFinancesFolder.order > 0) { //if the folder order is zero, it can't move up
+                  publicFolder = ppublicFolder;
+                  if(publicFolder.order > 0) { //if the folder order is zero, it can't move up
                      //find the above object, file or folder
                      _findOneFileOrFolder({
-                        folder:  publicFinancesFolder.folder,
-                        order: publicFinancesFolder.order - 1
+                        folder:  publicFolder.folder,
+                        order: publicFolder.order - 1
                      }).then(function(fileOrFolder) {
                         if (fileOrFolder) {
                            //move the above object down
-                           fileOrFolder.order = publicFinancesFolder.order;
+                           fileOrFolder.order = publicFolder.order;
                            fileOrFolder
                            .save()
                            .then(function(savedFileOrFolder) {
                               //move the folder up
-                              publicFinancesFolder.order -= 1;
-                              return publicFinancesFolder.save();
+                              publicFolder.order -= 1;
+                              return publicFolder.save();
                            }).then(function(savedFolder) {
                               Utils.sendJSONresponse(res, 200, { message: 'folder moved up' });
                            }).catch(function(err) {
@@ -449,7 +555,7 @@ module.exports.moveFolderUp = function(req, res, next) {
                   }
                } else {
                   //folder not found
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
                }
             });
 
@@ -460,40 +566,40 @@ module.exports.moveFolderUp = function(req, res, next) {
 
 module.exports.moveFolderDown = function(req, res, next) {
    var folderId = null;
-   var publicFinancesFolder = null;
+   var publicFolder = null;
    if (req.params.folderId) {
       folderId = req.params.folderId;
-      return PublicFinancesFolder //first, find the folder
-            .findOne({ _id: PublicFinancesFolderModule.getMongoose().Types.ObjectId(folderId) })
-            .then(async function(ppublicFinancesFolder) {
-               if (ppublicFinancesFolder) {
+      return PublicFolder //first, find the folder
+            .findOne({ _id: PublicFolderModule.getMongoose().Types.ObjectId(folderId) })
+            .then(async function(ppublicFolder) {
+               if (ppublicFolder) {
                   var objectsAmount;
                   //found the folder
-                  publicFinancesFolder = ppublicFinancesFolder;
+                  publicFolder = ppublicFolder;
                   //get the amount of objects in the same folder
                   try {
-                     objectsAmount = await _countObjectsInFolder(publicFinancesFolder.folder);
+                     objectsAmount = await _countObjectsInFolder(publicFolder.folder);
                   } catch (err) {
                      winston.error("Error while moving folder down, err = [%s]", err);
                      Utils.next(400, err, next);
                      return;
                   }
-                  if (publicFinancesFolder.order < objectsAmount - 1) { //if the folder is the last
+                  if (publicFolder.order < objectsAmount - 1) { //if the folder is the last
                                                                          //it can't move down
                      //find the below object, file or folder
                      return _findOneFileOrFolder({
-                              folder:  publicFinancesFolder.folder,
-                              order: publicFinancesFolder.order + 1
+                              folder:  publicFolder.folder,
+                              order: publicFolder.order + 1
                             }).then(function(fileOrFolder) {
                                if (fileOrFolder) {
                                   //move the below object up
-                                  fileOrFolder.order = publicFinancesFolder.order;
+                                  fileOrFolder.order = publicFolder.order;
                                   return fileOrFolder
                                          .save()
                                          .then(function(savedFileOrFolder) {
                                             //move the folder down
-                                            publicFinancesFolder.order += 1;
-                                            return publicFinancesFolder.save();
+                                            publicFolder.order += 1;
+                                            return publicFolder.save();
                                          }).then(function(savedFolder) {
                                             Utils.sendJSONresponse(res, 200, { message: 'folder moved down' });
                                          }).catch(function(err) {
@@ -517,7 +623,7 @@ module.exports.moveFolderDown = function(req, res, next) {
                   }
                } else {
                   //folder not found
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
                }
             });
 
@@ -528,30 +634,30 @@ module.exports.moveFolderDown = function(req, res, next) {
 
 module.exports.moveFileUp = function(req, res, next) {
    var fileId = null;
-   var publicFinancesFile = null;
+   var publicFile = null;
    if (req.params.fileId) {
       fileId = req.params.fileId;
-      return PublicFinancesFile //first, find the file
-            .findOne({ _id: PublicFinancesFileModule.getMongoose().Types.ObjectId(fileId) })
-            .then( function(ppublicFinancesFile) {
-               if (ppublicFinancesFile) {
+      return PublicFile //first, find the file
+            .findOne({ _id: PublicFileModule.getMongoose().Types.ObjectId(fileId) })
+            .then( function(ppublicFile) {
+               if (ppublicFile) {
                   //found the file
-                  publicFinancesFile = ppublicFinancesFile;
-                  if (publicFinancesFile.order > 0) { //if the file order is zero, it can't move up
+                  publicFile = ppublicFile;
+                  if (publicFile.order > 0) { //if the file order is zero, it can't move up
                      //find the above object, file or folder
                      _findOneFileOrFolder({
-                        folder:  publicFinancesFile.folder,
-                        order: publicFinancesFile.order - 1
+                        folder:  publicFile.folder,
+                        order: publicFile.order - 1
                      }).then(function(fileOrFolder) {
                         if (fileOrFolder) {
                            //move the above object down
-                           fileOrFolder.order = publicFinancesFile.order;
+                           fileOrFolder.order = publicFile.order;
                            fileOrFolder
                            .save()
                            .then(function(savedFileOrFolder) {
                               //move the file up
-                              publicFinancesFile.order -= 1;
-                              return publicFinancesFile.save();
+                              publicFile.order -= 1;
+                              return publicFile.save();
                            }).then(function(savedFile) {
                               Utils.sendJSONresponse(res, 200, { message: 'file moved up' });
                            }).catch(function(err) {
@@ -575,7 +681,7 @@ module.exports.moveFileUp = function(req, res, next) {
                   }
                } else {
                   //file not found
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances file not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public file not found' });
                }
             });
    } else {
@@ -585,39 +691,39 @@ module.exports.moveFileUp = function(req, res, next) {
 
 module.exports.moveFileDown = function(req, res, next) {
    var fileId = null;
-   var publicFinancesFile = null;
+   var publicFile = null;
    if (req.params.fileId) {
       fileId = req.params.fileId;
-      return PublicFinancesFile //first, find the file
-            .findOne({ _id: PublicFinancesFileModule.getMongoose().Types.ObjectId(fileId) })
-            .then( async function(ppublicFinancesFile) {
-               if (ppublicFinancesFile) {
+      return PublicFile //first, find the file
+            .findOne({ _id: PublicFileModule.getMongoose().Types.ObjectId(fileId) })
+            .then( async function(ppublicFile) {
+               if (ppublicFile) {
                   //found the file
-                  publicFinancesFile = ppublicFinancesFile;
+                  publicFile = ppublicFile;
                   //get the amount of objects in the same folder
                   try {
-                     objectsAmount = await _countObjectsInFolder(publicFinancesFile.folder);
+                     objectsAmount = await _countObjectsInFolder(publicFile.folder);
                   } catch (err) {
                      winston.error("Error while moving file down, err = [%s]", err);
                      Utils.next(400, err, next);
                      return;
                   }
-                  if (publicFinancesFile.order < objectsAmount - 1) { //if the file is the last
+                  if (publicFile.order < objectsAmount - 1) { //if the file is the last
                                                                       //it can't move down
                      //find the above object, file or folder
                      _findOneFileOrFolder({
-                        folder:  publicFinancesFile.folder,
-                        order: publicFinancesFile.order + 1
+                        folder:  publicFile.folder,
+                        order: publicFile.order + 1
                      }).then(function(fileOrFolder) {
                         if (fileOrFolder) {
                            //move the above object down
-                           fileOrFolder.order = publicFinancesFile.order;
+                           fileOrFolder.order = publicFile.order;
                            fileOrFolder
                            .save()
                            .then(function(savedFileOrFolder) {
                               //move the file up
-                              publicFinancesFile.order += 1;
-                              return publicFinancesFile.save();
+                              publicFile.order += 1;
+                              return publicFile.save();
                            }).then(function(savedFile) {
                               Utils.sendJSONresponse(res, 200, { message: 'file moved down' });
                            }).catch(function(err) {
@@ -641,7 +747,7 @@ module.exports.moveFileDown = function(req, res, next) {
                   }
                } else {
                   //file not found
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances file not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public file not found' });
                }
             });
    } else {
@@ -649,26 +755,26 @@ module.exports.moveFileDown = function(req, res, next) {
    }
 }
 
-module.exports.downloadPublicFinancesFile = function(req, res, next) {
+module.exports.downloadPublicFile = function(req, res, next) {
    var camaraApiConfig = config.get("CamaraApi");
-   var publicFinancesFile;
+   var publicFile;
    var folderPath;
    var notContinue = true;
 
    if(req.params.fileId) {
-      PublicFinancesFile
-            .findOne({ _id: PublicFinancesFileModule.getMongoose().Types.ObjectId(req.params.fileId) })
-            .then( function(ppublicFinancesFile) {
-               if (ppublicFinancesFile) {
-                  publicFinancesFile = ppublicFinancesFile;
-                  if (publicFinancesFile.folder) {
-                     return _getFolderPath(publicFinancesFile.folder);
+      PublicFile
+            .findOne({ _id: PublicFileModule.getMongoose().Types.ObjectId(req.params.fileId) })
+            .then( function(ppublicFile) {
+               if (ppublicFile) {
+                  publicFile = ppublicFile;
+                  if (publicFile.folder) {
+                     return _getFolderPath(publicFile.folder);
                   } else {
                      //the file is in the root folder
                      return [{ name: '' }]; //just the root folder in the path
                   }
                } else {
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances file not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public file not found' });
                   return notContinue;
                }
             }).then(function(folderPath) {
@@ -683,15 +789,15 @@ module.exports.downloadPublicFinancesFile = function(req, res, next) {
                var sfolderPath = _folderPathAsString(folderPath);
 
                var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
-               s3Client.getObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
-                                   camaraApiConfig.PublicFinances.s3Files.s3Folder + sfolderPath + "/" + publicFinancesFile.name,
+               s3Client.getObject( camaraApiConfig.PublicFiles.s3Files.s3Bucket,
+                                   camaraApiConfig.PublicFiles.s3Files.s3Folder + sfolderPath + "/" + publicFile.name,
 
                   function(err, dataStream) {
                      if (!err) {
                         res.set({
-                          'Content-Type': publicFinancesFile.contentType,
+                          'Content-Type': publicFile.contentType,
                           'Content-Length': dataStream.headers['content-length'],
-                          'Content-Disposition': 'inline;filename="relatorio.' + publicFinancesFile.extension + '"'
+                          'Content-Disposition': 'inline;filename="relatorio.' + publicFile.extension + '"'
                         });
                         var buffers = [];
                         var bufferLength = 0;
@@ -704,38 +810,38 @@ module.exports.downloadPublicFinancesFile = function(req, res, next) {
                            res.send(dataFile);
                         });
                         dataStream.on('error', function(err) {
-                           winston.error("Error while downloading public finances file, err = [%s]", err);
+                           winston.error("Error while downloading public file, err = [%s]", err);
                         });
                      } else {
-                        winston.error("Error while downloading public finances file, err = [%s]", err);
+                        winston.error("Error while downloading public file, err = [%s]", err);
                         Utils.next(400, err, next);
                      }
                   });
 
             }).catch(function(err) {
-               winston.error("Error while downloading public finances file, err = [%s]", err);
+               winston.error("Error while downloading public file, err = [%s]", err);
                Utils.next(400, err, next);
             });
    } else {
-      Utils.sendJSONresponse(res, 400, { message: 'undefined public finances file id' });
+      Utils.sendJSONresponse(res, 400, { message: 'undefined public file id' });
    }
 }
 
-module.exports.removePublicFinancesFile = function(req, res, next) {
+module.exports.removePublicFile = function(req, res, next) {
    var camaraApiConfig = config.get("CamaraApi");
-   var publicFinancesFile;
+   var publicFile;
    var folderPath;
    var notContinue = true;
 
    if(req.params.fileId) {
-      PublicFinancesFile
-            .findOne({ _id: PublicFinancesFileModule.getMongoose().Types.ObjectId(req.params.fileId) })
-            .then( function(ppublicFinancesFile) {
-               if (ppublicFinancesFile) {
-                  publicFinancesFile = ppublicFinancesFile;
-                  return publicFinancesFile.remove();
+      PublicFile
+            .findOne({ _id: PublicFileModule.getMongoose().Types.ObjectId(req.params.fileId) })
+            .then( function(ppublicFile) {
+               if (ppublicFile) {
+                  publicFile = ppublicFile;
+                  return publicFile.remove();
                } else {
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances file not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public file not found' });
                   return notContinue;
                }
             }).then(function(removeFileActionResult) {
@@ -745,12 +851,12 @@ module.exports.removePublicFinancesFile = function(req, res, next) {
                //file removed from mongodb, it hasn't removed from s3 yet
 
                //update orders of below elements
-               return _updateFolderAndFilesOrders(publicFinancesFile.folder, publicFinancesFile.order);
+               return _updateFolderAndFilesOrders(publicFile.folder, publicFile.order);
             }).then(function(updateFolderAndFilesOrdersResult) {
                if (updateFolderAndFilesOrdersResult === notContinue) {
                   return notContinue;
-               } else if (publicFinancesFile.folder) {
-                  return _getFolderPath(publicFinancesFile.folder);
+               } else if (publicFile.folder) {
+                  return _getFolderPath(publicFile.folder);
                } else {
                   //the file is in the root folder
                   return [{ name: '' }]; //just the root folder in the path
@@ -766,40 +872,40 @@ module.exports.removePublicFinancesFile = function(req, res, next) {
                var sfolderPath = _folderPathAsString(folderPath);
 
                var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
-               s3Client.removeObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
-                                      camaraApiConfig.PublicFinances.s3Files.s3Folder + sfolderPath + "/" + publicFinancesFile.name,
+               s3Client.removeObject( camaraApiConfig.PublicFiles.s3Files.s3Bucket,
+                                      camaraApiConfig.PublicFiles.s3Files.s3Folder + sfolderPath + "/" + publicFile.name,
 
                   function(err, dataStream) {
                      if (!err) {
-                        Utils.sendJSONresponse(res, 200, { message: ' public finances file removed' });
+                        Utils.sendJSONresponse(res, 200, { message: ' public file removed' });
                      } else {
-                        winston.error("Error while removing public finances file, err = [%s]", err);
+                        winston.error("Error while removing public file, err = [%s]", err);
                         Utils.next(400, err, next);
                      }
                   });
 
             }).catch(function(err) {
-               winston.error("Error while removing public finances file, err = [%s]", err);
+               winston.error("Error while removing public file, err = [%s]", err);
                Utils.next(400, err, next);
             });
    } else {
-      Utils.sendJSONresponse(res, 400, { message: 'undefined public finances file id' });
+      Utils.sendJSONresponse(res, 400, { message: 'undefined public file id' });
    }
 }
 
-module.exports.removePublicFinancesFolder = function(req, res, next) {
+module.exports.removePublicFolder = function(req, res, next) {
    var camaraApiConfig = config.get("CamaraApi");
-   var publicFinancesFolder;
+   var publicFolder;
    var folderPath;
    var notContinue = true;
-   var objectsAmoun = 0;
+   var objectsAmount = 0;
 
    if(req.params.folderId) {
-      PublicFinancesFolder
-            .findOne({ _id: PublicFinancesFolderModule.getMongoose().Types.ObjectId(req.params.folderId) })
-            .then( async function(ppublicFinancesFolder) {
-               if (ppublicFinancesFolder) {
-                  publicFinancesFolder = ppublicFinancesFolder;
+      PublicFolder
+            .findOne({ _id: PublicFolderModule.getMongoose().Types.ObjectId(req.params.folderId) })
+            .then( async function(ppublicFolder) {
+               if (ppublicFolder) {
+                  publicFolder = ppublicFolder;
                   //get the amount of objects in the folder (in order to check if the folder is empty)
                   try {
                      objectsAmount = await _countObjectsInFolder(req.params.folderId);
@@ -813,10 +919,10 @@ module.exports.removePublicFinancesFolder = function(req, res, next) {
                      Utils.sendJSONresponse(res, 400, { message: 'the folder wasn\'t removed, it isn\'t empty' });
                      return notContinue;
                   } else {
-                     return publicFinancesFolder.remove();
+                     return publicFolder.remove();
                   }
                } else {
-                  Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+                  Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
                   return notContinue;
                }
             }).then(function(removeFolderActionResult) {
@@ -826,12 +932,12 @@ module.exports.removePublicFinancesFolder = function(req, res, next) {
                //folder removed from mongodb, it hasn't removed from s3 yet
 
                //update orders of below elements
-               return _updateFolderAndFilesOrders(publicFinancesFolder.folder, publicFinancesFolder.order);
+               return _updateFolderAndFilesOrders(publicFolder.folder, publicFolder.order);
             }).then(function(updateFolderAndFilesOrdersResult) {
                if (updateFolderAndFilesOrdersResult === notContinue) {
                   return notContinue;
-               } else if (publicFinancesFolder.folder) {
-                  return _getFolderPath(publicFinancesFolder.folder);
+               } else if (publicFolder.folder) {
+                  return _getFolderPath(publicFolder.folder);
                } else {
                   //the file is in the root folder
                   return [{ name: '' }]; //just the root folder in the path
@@ -847,28 +953,28 @@ module.exports.removePublicFinancesFolder = function(req, res, next) {
                var sfolderPath = _folderPathAsString(folderPath);
 
                var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
-               s3Client.removeObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
-                                      camaraApiConfig.PublicFinances.s3Files.s3Folder + sfolderPath + "/" + publicFinancesFolder.name,
+               s3Client.removeObject( camaraApiConfig.PublicFiles.s3Files.s3Bucket,
+                                      camaraApiConfig.PublicFiles.s3Files.s3Folder + sfolderPath + "/" + publicFolder.name,
 
                   function(err, dataStream) {
                      if (!err) {
-                        Utils.sendJSONresponse(res, 200, { message: 'public finances folder removed' });
+                        Utils.sendJSONresponse(res, 200, { message: 'public folder removed' });
                      } else {
-                        winston.error("Error while removing public finances folder, err = [%s]", err);
+                        winston.error("Error while removing public folder, err = [%s]", err);
                         Utils.next(400, err, next);
                      }
                   });
 
             }).catch(function(err) {
-               winston.error("Error while removing public finances folder, err = [%s]", err);
+               winston.error("Error while removing public folder, err = [%s]", err);
                Utils.next(400, err, next);
             });
    } else {
-      Utils.sendJSONresponse(res, 400, { message: 'undefined public finances folder id' });
+      Utils.sendJSONresponse(res, 400, { message: 'undefined public folder id' });
    }
 }
 
-module.exports.uploadPublicFinancesFile = function(req, res, next) {
+module.exports.uploadPublicFile = function(req, res, next) {
    var notContinue = true;
 
    if (!req.files) {
@@ -876,7 +982,7 @@ module.exports.uploadPublicFinancesFile = function(req, res, next) {
       return;
    }
 
-   var publicFinancesFile = req.files.file;
+   var publicFile = req.files.file;
    var fileName = req.params.fileName;
    var folderId = req.params.folderId;
 
@@ -894,13 +1000,13 @@ module.exports.uploadPublicFinancesFile = function(req, res, next) {
 
    //find the folder
    return _findFolderOrRootFolder(folderId) //first, find the folder
-         .then(async function(publicFinancesFolder) {
-            if (publicFinancesFolder === _findFolderResultIsRoot_) {
+         .then(async function(publicFolder) {
+            if (publicFolder === _findFolderResultIsRoot_) {
                return "";
-            } else if(publicFinancesFolder){
+            } else if(publicFolder) {
                return _getFolderPath(folderId);
             } else {
-               Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+               Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
                return notContinue;
             }
          }).then(function(folderPath) {
@@ -910,40 +1016,40 @@ module.exports.uploadPublicFinancesFile = function(req, res, next) {
 
                var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
 
-               var fileNameParts = _.split(publicFinancesFile.name, '.');
+               var fileNameParts = _.split(publicFile.name, '.');
                var extension = "";
                if (fileNameParts.length > 1) {
                   //append the extension file
                   extension =  fileNameParts[fileNameParts.length - 1];
                }
                //send the file to S3 server
-               s3Client.putObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
-                                   camaraApiConfig.PublicFinances.s3Files.s3Folder + sfolderPath + "/" + fileName,
-                                   publicFinancesFile.data,
-                                   publicFinancesFile.data.length,
-                                   publicFinancesFile.mimetype,
+               s3Client.putObject( camaraApiConfig.PublicFiles.s3Files.s3Bucket,
+                                   camaraApiConfig.PublicFiles.s3Files.s3Folder + sfolderPath + "/" + fileName,
+                                   publicFile.data,
+                                   publicFile.data.length,
+                                   publicFile.mimetype,
                function(err, etag) {
                   if (!err) {
                      Utils.sendJSONresponse(res, 200, {
-                        message: 'public finances file uploaded and saved',
+                        message: 'public file uploaded and saved',
                         file: {
                            'name': fileName,
-                           'length': publicFinancesFile.data.length,
-                           'contentType': publicFinancesFile.mimetype,
+                           'length': publicFile.data.length,
+                           'contentType': publicFile.mimetype,
                            'extension': extension,
                            'folderPath': sfolderPath,
                            'folder': folderId,
-                           'url': camaraApiConfig.PublicFinances.s3Files.urlBase + sfolderPath + "/" + fileName
+                           'url': camaraApiConfig.PublicFiles.s3Files.urlBase + sfolderPath + "/" + fileName
                         }
                      });
                   } else {
-                     winston.error("Error while uploading public finances file, err = [%s]", err);
+                     winston.error("Error while uploading public file, err = [%s]", err);
                      Utils.next(400, err, next);
                   }
                });
             }
          }).catch(function(err) {
-            winston.error("Error while uploading a new public finances file, err = [%s]", err);
+            winston.error("Error while uploading a new public file, err = [%s]", err);
             Utils.next(400, err, next);
          });
 }
@@ -954,7 +1060,7 @@ module.exports.newFile = function(req, res, next) {
       return;
    }
    if (req.body.file) {
-      winston.debug("Saving new public finances file ...");
+      winston.debug("Saving new public file ...");
 
       var file = req.body.file;
       var folderId = file.folder;
@@ -966,39 +1072,39 @@ module.exports.newFile = function(req, res, next) {
          if (folder === _findFolderResultIsRoot_ || folder) {
             return _countObjectsInFolder(folderId);
          } else {
-            Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+            Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
             return notContinue;
          }
       }).then(function (amountOfObjectsInFolder) {
          if(amountOfObjectsInFolder !== notContinue) {
-            var publicFinancesFile = new PublicFinancesFile();
+            var publicFile = new PublicFile();
 
-            publicFinancesFile.creationDate = new Date();
-            publicFinancesFile.length = file.length;
-            publicFinancesFile.order = amountOfObjectsInFolder;
-            publicFinancesFile.isFolder = false;
-            publicFinancesFile.creationUser = req.payload._id;
-            publicFinancesFile.folder = folderId;
-            publicFinancesFile.name = file.name;
-            publicFinancesFile.description = file.description;
-            publicFinancesFile.extension = file.extension;
-            publicFinancesFile.contentType = file.contentType;
+            publicFile.creationDate = new Date();
+            publicFile.length = file.length;
+            publicFile.order = amountOfObjectsInFolder;
+            publicFile.isFolder = false;
+            publicFile.creationUser = req.payload._id;
+            publicFile.folder = folderId;
+            publicFile.name = file.name;
+            publicFile.description = file.description;
+            publicFile.extension = file.extension;
+            publicFile.contentType = file.contentType;
 
-            publicFinancesFile.save(function(err, savedPublicFinancesFile) {
+            publicFile.save(function(err, savedPublicFile) {
                if(!err) {
-                  winston.verbose("Public finances file saved.");
+                  winston.verbose("Public file saved.");
                   Utils.sendJSONresponse(res, 200, {
-                     message: 'public finances file saved',
-                     id: savedPublicFinancesFile._id
+                     message: 'public file saved',
+                     id: savedPublicFile._id
                   });
                } else {
-                  winston.error("Error while creating a new public finances file, err = [%s]", err);
+                  winston.error("Error while creating a new public file, err = [%s]", err);
                   Utils.next(400, err, next);
                }
             });
          }
       }).catch(function(err) {
-         winston.error("Error while creating a new public finances file, err = [%s]", err);
+         winston.error("Error while creating a new public file, err = [%s]", err);
          Utils.next(400, err, next);
       });
    } else {
@@ -1012,7 +1118,7 @@ module.exports.newFolder = function(req, res, next) {
       return;
    }
    if (req.body.folder) {
-      winston.debug("Saving creating new public finances folder ...");
+      winston.debug("Saving creating new public folder ...");
 
       var folder = req.body.folder;
       var parentFolderId = folder.folder;
@@ -1024,36 +1130,36 @@ module.exports.newFolder = function(req, res, next) {
          if (folder === _findFolderResultIsRoot_ || folder) {
             return _countObjectsInFolder(parentFolderId);
          } else {
-            Utils.sendJSONresponse(res, 400, { message: 'parent public finances folder not found' });
+            Utils.sendJSONresponse(res, 400, { message: 'parent public folder not found' });
             return notContinue;
          }
       }).then(function (amountOfObjectsInFolder) {
          if(amountOfObjectsInFolder !== notContinue) {
-            var publicFinancesFolder = new PublicFinancesFolder();
+            var publicFolder = new PublicFolder();
 
-            publicFinancesFolder.creationDate = new Date();
-            publicFinancesFolder.order = amountOfObjectsInFolder;
-            publicFinancesFolder.isFolder = true;
-            publicFinancesFolder.creationUser = req.payload._id;
-            publicFinancesFolder.folder = parentFolderId;
-            publicFinancesFolder.name = folder.name;
-            publicFinancesFolder.description = folder.description;
+            publicFolder.creationDate = new Date();
+            publicFolder.order = amountOfObjectsInFolder;
+            publicFolder.isFolder = true;
+            publicFolder.creationUser = req.payload._id;
+            publicFolder.folder = parentFolderId;
+            publicFolder.name = folder.name;
+            publicFolder.description = folder.description;
 
-            publicFinancesFolder.save(function(err, savedPublicFinancesFolder) {
+            publicFolder.save(function(err, savedPublicFolder) {
                if(!err) {
-                  winston.verbose("Public finances folder created.");
+                  winston.verbose("Public folder created.");
                   Utils.sendJSONresponse(res, 200, {
-                     message: 'public finances folder created',
-                     id: savedPublicFinancesFolder._id
+                     message: 'public folder created',
+                     id: savedPublicFolder._id
                   });
                } else {
-                  winston.error("Error while creating a new public finances folder, err = [%s]", err);
+                  winston.error("Error while creating a new public folder, err = [%s]", err);
                   Utils.next(400, err, next);
                }
             });
          }
       }).catch(function(err) {
-         winston.error("Error while creating a new public finances folder, err = [%s]", err);
+         winston.error("Error while creating a new public folder, err = [%s]", err);
          Utils.next(400, err, next);
       });
    } else {
@@ -1067,26 +1173,26 @@ module.exports.editFolder = function(req, res, next) {
       return;
    }
    if (req.body.folder && req.body.folder.id) {
-      winston.debug("Saving changing public finances folder description ...");
+      winston.debug("Saving changing public folder description ...");
 
       var folder = req.body.folder;
 
       _findFolderById(folder.id)
       .then(function (pfolder) {
          if (pfolder) {
-            var publicFinancesFolder = new PublicFinancesFolder();
+            var publicFolder = new PublicFolder();
 
             pfolder.description = folder.description;
 
-            pfolder.save(function(err, savedPublicFinancesFolder) {
+            pfolder.save(function(err, savedPublicFolder) {
                if (!err) {
-                  winston.verbose("public finances folder description changed.");
+                  winston.verbose("public folder description changed.");
                   Utils.sendJSONresponse(res, 200, {
-                     message: 'public finances folder description changed',
-                     id: savedPublicFinancesFolder._id
+                     message: 'public folder description changed',
+                     id: savedPublicFolder._id
                   });
                } else {
-                  winston.error("Error while changing public finances folder description, err = [%s]", err);
+                  winston.error("Error while changing public folder description, err = [%s]", err);
                   Utils.next(400, err, next);
                }
             });
@@ -1094,7 +1200,7 @@ module.exports.editFolder = function(req, res, next) {
             Utils.sendJSONresponse(res, 400, { message: 'folder not found' });
          }
       }).catch(function (err) {
-         winston.error("Error while changing public finances folder, err = [%s]", err);
+         winston.error("Error while changing public folder, err = [%s]", err);
          Utils.next(400, err, next);
       });
    } else {
@@ -1120,7 +1226,7 @@ module.exports.checkUniqueDescription = function(req, res, next) {
                return findElementsByDescriptionIC(folderId, description);
             } else {
                //folder doesn't exist
-               Utils.sendJSONresponse(res, 400, { message: 'public finances folder not found' });
+               Utils.sendJSONresponse(res, 400, { message: 'public folder not found' });
                return notContinue;
             }
          }).then(function(foundElements) {
@@ -1152,13 +1258,13 @@ module.exports.deleteRawFile = function(req, res, next) {
 
       var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
       //send the file to S3 server
-      s3Client.removeObject( camaraApiConfig.PublicFinances.s3Files.s3Bucket,
-                             camaraApiConfig.PublicFinances.s3Files.s3Folder + filePath,
+      s3Client.removeObject( camaraApiConfig.PublicFiles.s3Files.s3Bucket,
+                             camaraApiConfig.PublicFiles.s3Files.s3Folder + filePath,
       function(err, etag) {
          if(!err) {
-            Utils.sendJSONresponse(res, 200, { 'message': 'the public finances file was removed', 'filepath': filePath });
+            Utils.sendJSONresponse(res, 200, { 'message': 'the public file was removed', 'filepath': filePath });
          } else {
-            winston.error("Error while removing the public finances file , err = [%s]", err);
+            winston.error("Error while removing the public file , err = [%s]", err);
             Utils.next(400, err, next);
          }
       });

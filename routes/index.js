@@ -35,7 +35,7 @@ var legislativePropositionsControllers = require('../controllers/legislativeProp
 var legislativePropositionTypesControllers = require('../controllers/legislativePropositionTypes.js');
 var legislativePropositionTagsControllers = require('../controllers/legislativePropositionTags.js');
 var legislativePropositionRelationshipTypesControllers = require('../controllers/legislativePropositionRelationshipTypes.js');
-var publicFinancesControllers = require('../controllers/publicFinances.js');
+var publicFilesControllers = require('../controllers/publicFiles.js');
 
 var testController = require('../controllers/test.js');
 
@@ -163,6 +163,7 @@ router.get('/licitacao/nextNumber/:year', licitacoesControllers.getNextNumberOfT
 router.get('/licitacao/event/download/:eventId', licitacoesControllers.downloadEventFile);
 router.get('/licitacao/event/raw/download/:fileName', licitacoesControllers.rawDownloadEventFile);
 router.get('/licitacao/events/last', licitacoesControllers.getLastLicitacoesEvents);
+router.get('/licitacao/events/all', licitacoesControllers.getAllLicitacoesEvents);
 router.get('/licitacao/event/:eventId', licitacoesControllers.getLicitacaoEvent);
 router.get('/licitacao/:licitacaoId', licitacoesControllers.getLicitacao);
 router.put('/licitacao/event/file/:uuid', licitacoesControllers.uploadEventFile);
@@ -209,25 +210,27 @@ router.delete('/legislativePropositionTag/:legislativePropositionTagId', legisla
 //legislative proposition relationship types
 router.get('/legislativePropositionRelationshipTypes', legislativePropositionRelationshipTypesControllers.getLegislativePropositionRelationshipTypes);
 
-//public Finances
-router.get('/publicFinances/folder/amountOfElements/:folderId', publicFinancesControllers.getAmountOfElements);
-router.get('/publicFinances/folder/amountOfElements', publicFinancesControllers.getAmountOfElements);
-router.get('/publicFinances/folder/:folderId', publicFinancesControllers.listFolderContents);
-router.get('/publicFinances/folder', publicFinancesControllers.listFolderContents);
-router.get('/publicFinances/folderPath/:folderId', publicFinancesControllers.getFolderPath);
-router.get('/publicFinances/file/:fileId', publicFinancesControllers.downloadPublicFinancesFile);
-router.put('/publicFinances/file/upload/:folderId/:fileName', publicFinancesControllers.uploadPublicFinancesFile);
-router.put('/publicFinances/file', isLogged(), publicFinancesControllers.newFile);
-router.put('/publicFinances/folder', isLogged(), publicFinancesControllers.newFolder);
-router.get('/publicFinances/moveFolder/up/:folderId', publicFinancesControllers.moveFolderUp);
-router.get('/publicFinances/moveFolder/down/:folderId', publicFinancesControllers.moveFolderDown);
-router.get('/publicFinances/moveFile/up/:fileId', publicFinancesControllers.moveFileUp);
-router.get('/publicFinances/moveFile/down/:fileId', publicFinancesControllers.moveFileDown);
-router.get('/publicFinances/checkUniqueDescription/:folderId', publicFinancesControllers.checkUniqueDescription);
-router.delete('/publicFinances/file/raw', publicFinancesControllers.deleteRawFile);
-router.delete('/publicFinances/file/:fileId', publicFinancesControllers.removePublicFinancesFile);
-router.delete('/publicFinances/folder/:folderId', publicFinancesControllers.removePublicFinancesFolder);
-router.post('/publicFinances/folder', isLogged(), publicFinancesControllers.editFolder);
+//public files
+router.get('/publicFiles/folder/amountOfElements/:folderId', publicFilesControllers.getAmountOfElements);
+router.get('/publicFiles/folder/amountOfElements', publicFilesControllers.getAmountOfElements);
+router.get('/publicFiles/folder/:folderId', publicFilesControllers.listFolderContents);
+router.get('/publicFiles/folder', publicFilesControllers.listFolderContents);
+router.get('/publicFiles/folderPath/:folderId', publicFilesControllers.getFolderPath);
+router.get('/publicFiles/file/all', publicFilesControllers.getAllFiles);
+router.get('/publicFiles/file/meta/:fileId', publicFilesControllers.getMetaFile);
+router.get('/publicFiles/file/:fileId', publicFilesControllers.downloadPublicFile);
+router.put('/publicFiles/file/upload/:folderId/:fileName', publicFilesControllers.uploadPublicFile);
+router.put('/publicFiles/file', isLogged(), publicFilesControllers.newFile);
+router.put('/publicFiles/folder', isLogged(), publicFilesControllers.newFolder);
+router.get('/publicFiles/moveFolder/up/:folderId', publicFilesControllers.moveFolderUp);
+router.get('/publicFiles/moveFolder/down/:folderId', publicFilesControllers.moveFolderDown);
+router.get('/publicFiles/moveFile/up/:fileId', publicFilesControllers.moveFileUp);
+router.get('/publicFiles/moveFile/down/:fileId', publicFilesControllers.moveFileDown);
+router.get('/publicFiles/checkUniqueDescription/:folderId', publicFilesControllers.checkUniqueDescription);
+router.delete('/publicFiles/file/raw', publicFilesControllers.deleteRawFile);
+router.delete('/publicFiles/file/:fileId', publicFilesControllers.removePublicFile);
+router.delete('/publicFiles/folder/:folderId', publicFilesControllers.removePublicFolder);
+router.post('/publicFiles/folder', isLogged(), publicFilesControllers.editFolder);
 
 //events from Google Calendar API Service
 router.get('/eventsCalendar', eventsCalendarControllers.getEvents);
