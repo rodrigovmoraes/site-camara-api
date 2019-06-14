@@ -81,6 +81,12 @@ module.exports.connect = function(callback) {
    }
 }
 
+module.exports.close = function() {
+   _gracefulShutdown('script termination', function() {
+      process.exit(0);
+   });
+}
+
 // For nodemon restarts
 process.once('SIGUSR2', function() {
     _gracefulShutdown('nodemon restart', function() {

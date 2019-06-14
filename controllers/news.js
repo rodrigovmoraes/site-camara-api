@@ -327,12 +327,21 @@ module.exports.getNews = function(req, res, next) {
    var filterAnd = [];
    filter['$and'] = filterAnd;
 
-   if(keywords) {
-      var keywordsRegex = new RegExp(keywords, "i");
-      filterAnd.push({ '$or': [ { title : { $regex : keywordsRegex } },
-                                { headline : { $regex : keywordsRegex } } ]
-                     });
+   var keywordsWords = [];
+   var k;
+
+   if (keywords) {
+      keywordsWords = _.words(keywords);
+      if (keywordsWords) {
+         for (k = 0; k < keywordsWords.length; k++) {
+            keywordsRegex = new RegExp(keywordsWords[k], "i");
+            filterAnd.push({ '$or': [ { title : { $regex : keywordsRegex } },
+                                      { headline : { $regex : keywordsRegex } } ]
+                           });
+         }
+      }
    }
+   
    if(date1) {
       filterAnd.push({ 'publicationDate': { '$gte' : date1 } });
    }

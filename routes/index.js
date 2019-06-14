@@ -196,6 +196,7 @@ router.get('/legislativeProposition/checkUniqueNumber/:legislativePropositionTyp
 router.get('/legislativeProposition/nextNumber/:legislativePropositionTypeId', legislativePropositionsControllers.getNextNumberOfTheType);
 router.get('/legislativeProposition/attachment/download/:legislativePropositionFileAttachmentId', legislativePropositionsControllers.downloadLegislativePropositionFileAttachment);
 router.get('/legislativeProposition/:legislativePropositionId', legislativePropositionsControllers.getLegislativeProposition);
+router.get('/legislativeProposition', legislativePropositionsControllers.getLegislativeProposition);
 //legislative proposition types
 router.get('/legislativePropositionTypes', legislativePropositionTypesControllers.getLegislativePropositionTypes);
 //legislative proposition tags

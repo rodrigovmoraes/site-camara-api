@@ -159,10 +159,19 @@ module.exports.getLicitacoes = function(req, res, next) {
    var filterAnd = [];
    filter['$and'] = filterAnd;
 
-   if(keywords) {
-      var keywordsRegex = new RegExp(keywords, "i");
-      filterAnd.push({ description : { $regex : keywordsRegex } });
+   var keywordsWords = [];
+   var k;
+
+   if (keywords) {
+      keywordsWords = _.words(keywords);
+      if (keywordsWords) {
+         for (k = 0; k < keywordsWords.length; k++) {
+            keywordsRegex = new RegExp(keywordsWords[k], "i");
+            filterAnd.push({ description : { $regex : keywordsRegex } });
+         }
+      }
    }
+
    if(number && number > 0) {
       filterAnd.push({ 'number': number });
    }

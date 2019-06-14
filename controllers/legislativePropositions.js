@@ -10,6 +10,8 @@ var LegislativePropositionModule = require('../models/LegislativeProposition.js'
 var LegislativeProposition = LegislativePropositionModule.getModel();
 var LegislativePropositionTypeModule = require('../models/LegislativePropositionType.js');
 var LegislativePropositionType = LegislativePropositionTypeModule.getModel();
+var LegislativePropositionTagModule = require('../models/LegislativePropositionTag.js');
+var LegislativePropositionTag = LegislativePropositionTagModule.getModel();
 var LegislativePropositionFileAttachmentModule = require('../models/LegislativePropositionFileAttachment.js');
 var LegislativePropositionFileAttachment = LegislativePropositionFileAttachmentModule.getModel();
 var LegislativePropositionRemovedModule = require('../models/LegislativePropositionRemoved.js');
@@ -179,6 +181,7 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    var date1 = req.query.date1 ?  req.query.date1 : null;
    var date2 = req.query.date2 ?  req.query.date2 : null;
    var type = req.query.type ?  req.query.type : null;
+   var tag = req.query.tag ?  req.query.tag : null;
    var sortField = req.query.sort ?  req.query.sort : null;
    var sortDirection = req.query.sortDirection ?  req.query.sortDirection : 1;
    var sortOptions = { date: -1,
@@ -188,11 +191,20 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    //filter options
    var filter = { };
    var filterAnd = [];
+   var keywordsWords = [];
+   var keywordsRegex;
+   var k;
+
    filter['$and'] = filterAnd;
 
-   if(keywords) {
-      var keywordsRegex = new RegExp(keywords, "i");
-      filterAnd.push({ description : { $regex : keywordsRegex } });
+   if (keywords) {
+      keywordsWords = _.words(keywords);
+      if (keywordsWords) {
+         for (k = 0; k < keywordsWords.length; k++) {
+            keywordsRegex = new RegExp(keywordsWords[k], "i");
+            filterAnd.push({ description : { $regex : keywordsRegex } });
+         }
+      }
    }
    if(number && number > 0) {
       filterAnd.push({ 'number': number });
@@ -207,7 +219,10 @@ module.exports.getLegislativePropositions = function(req, res, next) {
       filterAnd.push({ 'date': { '$lte' : date2 } });
    }
    if(type) {
-      filterAnd.push({ 'type' : LegislativePropositionModule.getMongoose().Types.ObjectId(type) });
+      filterAnd.push({ 'type' : LegislativePropositionTypeModule.getMongoose().Types.ObjectId(type) });
+   }
+   if(tag) {
+      filterAnd.push({ 'tags' : { "$in" : [ LegislativePropositionTagModule.getMongoose().Types.ObjectId(tag) ]} });
    }
    //set sort options
    if(sortField) {
@@ -304,7 +319,8 @@ module.exports.getLegislativePropositions = function(req, res, next) {
 }
 
 module.exports.getLegislativeProposition = function(req, res, next) {
-   if(req.params.legislativePropositionId) {
+   var search;
+   if (req.params.legislativePropositionId) {
       LegislativeProposition.findOne({ _id: LegislativePropositionModule.getMongoose().Types.ObjectId(req.params.legislativePropositionId) })
                .populate({
                    path: 'relationships.type'
@@ -336,6 +352,44 @@ module.exports.getLegislativeProposition = function(req, res, next) {
                   winston.error("Error while getting legislative proposition, err = [%s]", err);
                   Utils.next(400, err, next);
                });
+   } else if (req.query.number && req.query.typeCode) {
+      LegislativePropositionType
+         .findOne({ code: req.query.typeCode })
+         .then(function(legislativePropositionType) {
+            if (legislativePropositionType) {
+               LegislativeProposition
+                  .findOne({ number: req.query.number,type: legislativePropositionType })
+                  .populate({
+                      path: 'relationships.type'
+                  })
+                  .populate({
+                      path: 'relationships.otherLegislativeProposition'
+                  })
+                  .populate({
+                      path: 'type'
+                  })
+                  .populate({
+                      path: 'tags'
+                  })
+                  .populate({
+                      path: 'fileAttachments'
+                  })
+                  .populate({
+                      path: 'consolidatedFileAttachments'
+                  })
+                  .then( function(legislativeProposition) {
+                     if(legislativeProposition) {
+                        Utils.sendJSONresponse(res, 200, {
+                            "legislativeProposition" : legislativeProposition
+                        });
+                     } else {
+                        Utils.sendJSONresponse(res, 400, { message: 'legislative proposition not found' });
+                     }
+                  });
+            } else {
+               Utils.sendJSONresponse(res, 400, { message: 'legislative proposition type not found' });
+            }
+         });
    } else {
       Utils.sendJSONresponse(res, 400, { message: 'undefined legislative proposition id' });
    }

@@ -101,7 +101,13 @@ var _createModelSchema = function(mongoose) {
            ref: 'LegislativeProposition',
            required: true
         }
-     }]
+     }],
+     legislativeProcessId: {
+        type: Number,
+        required: false,
+        unique: false,
+        default: null
+     }
    });
    // number/type must be unique
    legislativePropositionSchema.index({ type: 1, number: 1 }, { unique: true });
