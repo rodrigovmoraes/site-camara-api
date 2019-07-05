@@ -66,7 +66,7 @@ var _createModelSchema = function(mongoose) {
      }]
    });
    // number/year must be unique
-   licitacaoSchema.index({ year: 1, number: 1 }, { unique: true });
+   licitacaoSchema.index({ year: 1, number: 1, category: 1 }, { unique: true });
 
    return licitacaoSchema;
 }

@@ -69,7 +69,6 @@ module.exports.editLicitacao = function(req, res, next) {
          if(licitacao) {
             var now = new Date();
             licitacao.description = licitacaoJSON.description;
-            licitacao.category = licitacaoJSON.category;
             licitacao.changedDate = now;
 
             winston.debug("Saving licitacao ...");
@@ -432,9 +431,12 @@ module.exports.checkUniqueNumber = function(req, res, next) {
       if(req.params.number) {
          var year = req.params.year;
          var number = req.params.number;
+         var category = req.params.category;
          Licitacao
             .count({ 'year': year,
-                     'number': number })
+                     'number': number,
+                     'category': LicitacaoCategoryModule.getMongoose().Types.ObjectId(category)
+                  })
             .exec()
             .then(function(result) {
                   if(result > 0) {
@@ -454,10 +456,12 @@ module.exports.checkUniqueNumber = function(req, res, next) {
 module.exports.getNextNumberOfTheYear = function(req, res, next) {
    if(req.params.year) {
       var year = req.params.year;
-
+      var category = req.params.category;
+      
       Licitacao
          .aggregate([
            { $match : { 'year' : parseInt(year) } },
+           { $match : { 'category' : LicitacaoCategoryModule.getMongoose().Types.ObjectId(category) } },
            {
                $group:
                {

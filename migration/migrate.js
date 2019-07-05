@@ -106,12 +106,20 @@ DbModule.connect(async function(mongoose, connection) {
    //*****************************************************************************
    var createUser = require('./createUser');
    var migrateLegislativePropositions = require('./migrateLegislativePropositions');
+   var migratePublicFiles = require('./migratePublicFiles');
+   var migrateNews = require('./migrateNews');
+   var migrateLicitacoes = require('./migrateLicitacoes');
+
    var s3BucketCleanAndCreate = require('./s3BucketCleanAndCreate');
 
    await s3BucketCleanAndCreate.cleanS3Bucket();
    await s3BucketCleanAndCreate.createS3Bucket();
    await createUser.run();
-   await migrateLegislativePropositions.run();
+   //await migrateLegislativePropositions.run();
+   //await migratePublicFiles.run();
+   //await migrateNews.run();
+   await migrateLicitacoes.run();
+
    //close mongodb connection
    DbModule.close();
 });

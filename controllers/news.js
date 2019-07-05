@@ -341,7 +341,7 @@ module.exports.getNews = function(req, res, next) {
          }
       }
    }
-   
+
    if(date1) {
       filterAnd.push({ 'publicationDate': { '$gte' : date1 } });
    }

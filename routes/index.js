@@ -158,8 +158,8 @@ router.delete('/licitacao/event/:licitacaoId/:eventId', licitacoesControllers.re
 router.delete('/licitacao/:licitacaoId', licitacoesControllers.removeLicitacao);
 router.get('/licitacao/publish/:licitacaoId', licitacoesControllers.publishLicitacao);
 router.get('/licitacao/unpublish/:licitacaoId', licitacoesControllers.unpublishLicitacao);
-router.get('/licitacao/checkUniqueNumber/:year/:number', licitacoesControllers.checkUniqueNumber);
-router.get('/licitacao/nextNumber/:year', licitacoesControllers.getNextNumberOfTheYear);
+router.get('/licitacao/checkUniqueNumber/:year/:number/:category', licitacoesControllers.checkUniqueNumber);
+router.get('/licitacao/nextNumber/:year/:category', licitacoesControllers.getNextNumberOfTheYear);
 router.get('/licitacao/event/download/:eventId', licitacoesControllers.downloadEventFile);
 router.get('/licitacao/event/raw/download/:fileName', licitacoesControllers.rawDownloadEventFile);
 router.get('/licitacao/events/last', licitacoesControllers.getLastLicitacoesEvents);

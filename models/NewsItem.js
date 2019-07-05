@@ -22,8 +22,7 @@ var _createModelSchema = function(mongoose) {
      },
      headline: {
         type: String,
-        required: false,
-        unique: false
+        contentType: String
      },
      views: {
         type: Number,
