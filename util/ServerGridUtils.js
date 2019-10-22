@@ -81,7 +81,7 @@ var _getUniqueValuesOfTheField = function(DataModel, fieldObject){
       match['$match']['$and'][1][fieldObject.field] = { $not: { $eq: '' } };
       match['$match']['$and'][2][fieldObject.field] = { $not: { $type: 'null' } };
       //get unique values of the desired field
-      DataModel.aggregate(match, { $group: { '_id': '$' + fieldObject.field } },
+      DataModel.aggregate([ match, { $group: { '_id': '$' + fieldObject.field } } ],
          function (err, elements) {
             if(!err){
                var values = _.map(elements, function(element) {

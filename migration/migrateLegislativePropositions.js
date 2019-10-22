@@ -387,7 +387,7 @@ var _setLinks = function (text, parentLegislativeProposition) {
          }
       } else {
          newText += text.substring(lastIndex, end);
-         console.log("URL found, but not a legislative proposition URL, url = [" + text.substring(begin, end) + "], num = [" + parentLegislativeProposition.number + "], legislativeTypeCode = [" + parentLegislativeProposition.type.description + "]");
+         //console.log("URL found, but not a legislative proposition URL, url = [" + text.substring(begin, end) + "], num = [" + parentLegislativeProposition.number + "], legislativeTypeCode = [" + parentLegislativeProposition.type.description + "]");
       }
       lastIndex = end;
    }

@@ -27,8 +27,14 @@ module.exports.newPage = function(req, res, next) {
       var page = new Page();
       var now = new Date();
       page.title = pageJSON.title;
+      //set tag
+      if (pageJSON.tag) {
+         page.tag = pageJSON.tag;
+      }
       page.creationDate = now;
       page.changedDate = null;
+      page.enableFacebookComments = pageJSON.enableFacebookComments;
+      page.enableFacebookShareButton = pageJSON.enableFacebookShareButton;
       page.body = pageJSON.body;
 
       winston.debug("Saving page ...");
@@ -55,7 +61,13 @@ module.exports.editPage = function(req, res, next) {
          if(page) {
             var now = new Date();
             page.title = pageJSON.title;
+            //set tag
+            if (pageJSON.tag) {
+               page.tag = pageJSON.tag;
+            }
             page.changedDate = now;
+            page.enableFacebookComments = pageJSON.enableFacebookComments;
+            page.enableFacebookShareButton = pageJSON.enableFacebookShareButton;
             page.body = pageJSON.body;
 
             winston.debug("Saving page ...");
@@ -186,7 +198,25 @@ module.exports.getPage = function(req, res, next) {
    } else {
       Utils.sendJSONresponse(res, 400, { message: 'undefined page id' });
    }
+}
 
+module.exports.getPageByTag = function(req, res, next) {
+   if (req.params.tag) {
+      Page.findOne({ tag: req.params.tag }).then( function(page) {
+         if(page) {
+            Utils.sendJSONresponse(res, 200, {
+                "page" : page
+            });
+         } else {
+            Utils.sendJSONresponse(res, 400, { message: 'page not found' });
+         }
+      }).catch(function(err) {
+         winston.error("Error while getting page, err = [%s]", err);
+         Utils.next(400, err, next);
+      });
+   } else {
+      Utils.sendJSONresponse(res, 400, { message: 'undefined page tag' });
+   }
 }
 
 module.exports.getIncrementPageViews = function(req, res, next) {
@@ -333,5 +363,20 @@ module.exports.uploadWysiwygFileVideoAttachment = function(req, res, next) {
             Utils.next(400, err, next);
          }
       });
+   }
+}
+
+module.exports.checkUniqueTag = function(req, res, next) {
+   var tag = req.params.tag;
+   if(tag) {
+      Page.count({'tag' : tag}).exec().then(function(result){
+         if(result > 0) {
+               Utils.sendJSONresponse(res, 200, { exists: true });
+         } else {
+               Utils.sendJSONresponse(res, 200, { exists: false });
+         }
+      });
+   }else{
+      Utils.sendJSONresponse(res, 400, { message: 'undefined tag' });
    }
 }

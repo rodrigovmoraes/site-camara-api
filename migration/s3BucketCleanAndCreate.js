@@ -14,7 +14,7 @@ var _ = require('lodash');
 /*****************************************************************************
 ********************************* PRIVATE ************************************
 ******************************************************************************/
-var _createS3Bucket = async function(done) {
+var _createS3Bucket = async function() {
    //remove s3 bucket
    var camaraApiConfig = config.get("CamaraApi");
    var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
@@ -36,13 +36,13 @@ var _createS3Bucket = async function(done) {
             resolve(true);
          }
       }).catch(function(err) {
-         console.log("Error while creating s3 bucket in SampleDataLoader, err = [" + err + "]");
+         console.log("Error while creating s3 bucket  for migration, err = [" + err + "]");
          reject(err);
       });
    });
 }
 
-var _cleanS3Bucket = async function(done) {
+var _cleanS3Bucket = async function() {
    //remove s3 bucket
    var camaraApiConfig = config.get("CamaraApi");
    var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
@@ -61,7 +61,7 @@ var _cleanS3Bucket = async function(done) {
          });
 
          listObjectsStream.on('error', function(err) {
-            console.log("Error while cleaning s3 bucket in SampleDataLoader, err = [" + err + "]");
+            console.log("Error while cleaning s3 bucket for migration, err = [" + err + "]");
             reject(err);
          });
 
@@ -80,8 +80,47 @@ var _cleanS3Bucket = async function(done) {
    });
 }
 
+var _cleanS3Folder = async function(folder) {
+   //remove s3 bucket
+   var camaraApiConfig = config.get("CamaraApi");
+   var s3Client = new Minio.Client(camaraApiConfig.S3Configuration);
+   var i;
+   console.log("Cleaning s3 folder " + folder + "...");
+   return new Promise(function(resolve, reject) {
+      s3Client
+      .bucketExists(camaraApiConfig.PublicFiles.s3Files.s3Bucket)
+      .then(function() {
+         //clean s3 bucket
+         var listObjectsStream = s3Client.listObjects( camaraApiConfig.PublicFiles.s3Files.s3Bucket, folder, true );
+         var s3Objects = [];
+
+         listObjectsStream.on('data', function(obj) {
+            s3Objects.push(obj.name);
+         });
+
+         listObjectsStream.on('error', function(err) {
+            console.log("Error while cleaning s3 folder  for migration, err = [" + err + "]");
+            reject(err);
+         });
+
+         listObjectsStream.on('end', async function() {
+            for (i = 0; i < s3Objects.length; i++) {
+               await s3Client.removeObject(camaraApiConfig.PublicFiles.s3Files.s3Bucket, s3Objects[i]);
+            }
+            console.log("S3 folder cleaned.");
+            resolve(true);
+         })
+      }).catch(function() {
+         //the bucket doesn't exist, then nothing to be cleared
+         console.log("S3 bucket doesn't exist.");
+         resolve(true);
+      });
+   });
+}
+
 /*****************************************************************************
 *********************************** BEGIN ************************************
 ******************************************************************************/
 module.exports.createS3Bucket = _createS3Bucket;
 module.exports.cleanS3Bucket = _cleanS3Bucket;
+module.exports.cleanS3Folder = _cleanS3Folder;

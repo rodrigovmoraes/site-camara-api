@@ -51,6 +51,9 @@ var PublicFile = require('../models/PublicFile.js');
 var PublicFolder = require('../models/PublicFolder.js');
 var UserGroupModule = require('../models/UserGroup.js');
 var UserModule = require('../models/User.js');
+var MenuPortalModule = require('../models/MenuPortal.js');
+var SecurityRoleModule = require('../models/SecurityRole.js');
+var MenuAdminModule = require('../models/MenuAdmin.js');
 
 /*****************************************************************************
 ********************************* MODELS MODULES *****************************
@@ -98,26 +101,49 @@ DbModule.connect(async function(mongoose, connection) {
    //User
    UserModule.setMongoose(mongoose);
    UserModule.setConnection(connection);
+   //Menu Portal Item
+   MenuPortalModule.setMongoose(mongoose);
+   MenuPortalModule.setConnection(connection);
+   //Security Role
+   SecurityRoleModule.setMongoose(mongoose);
+   SecurityRoleModule.setConnection(connection);
+   //Menu Admin Role
+   MenuAdminModule.setMongoose(mongoose);
+   MenuAdminModule.setConnection(connection);
 
    //migrate
 
    //*****************************************************************************
    //**************************Migration modules**********************************
    //*****************************************************************************
+   var migrateSecurityRoles = require('./migrateSecurityRoles');
+   var migrateUserGroup = require('./migrateUserGroup');
    var createUser = require('./createUser');
+   var migrateUsers = require('./migrateUsers');
+   var migrateMenuAdmin = require('./migrateMenuAdmin');
+
    var migrateLegislativePropositions = require('./migrateLegislativePropositions');
    var migratePublicFiles = require('./migratePublicFiles');
+   var migratePrestaContas = require('./migratePrestaContas');
    var migrateNews = require('./migrateNews');
    var migrateLicitacoes = require('./migrateLicitacoes');
+   var migrateMenuPortal = require('./migrateMenuPortal');
 
    var s3BucketCleanAndCreate = require('./s3BucketCleanAndCreate');
 
    await s3BucketCleanAndCreate.cleanS3Bucket();
    await s3BucketCleanAndCreate.createS3Bucket();
+   await migrateSecurityRoles.run();
+   await migrateUserGroup.run();
    await createUser.run();
-   //await migrateLegislativePropositions.run();
-   //await migratePublicFiles.run();
-   //await migrateNews.run();
+   await migrateUsers.run();
+
+   await migratePublicFiles.run();
+   await migratePrestaContas.run();
+   await migrateMenuAdmin.run();
+   await migrateMenuPortal.run();
+   await migrateLegislativePropositions.run();
+   await migrateNews.run();
    await migrateLicitacoes.run();
 
    //close mongodb connection

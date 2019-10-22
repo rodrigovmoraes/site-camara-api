@@ -457,7 +457,7 @@ module.exports.getNextNumberOfTheYear = function(req, res, next) {
    if(req.params.year) {
       var year = req.params.year;
       var category = req.params.category;
-      
+
       Licitacao
          .aggregate([
            { $match : { 'year' : parseInt(year) } },
@@ -844,7 +844,8 @@ module.exports.uploadEventFile = function(req, res, next) {
          if(!err) {
             Utils.sendJSONresponse(res, 200, { 'message': 'file uploaded',
                                                'filename': fileName,
-                                               'contentType': eventFile.mimetype
+                                               'contentType': eventFile.mimetype,
+                                               'url': camaraApiConfig.Licitacoes.s3LicitacaoEvent.urlBase + "/" + fileName
                                              });
          } else {
             winston.error("Error while uploading file of the licitacao event, err = [%s]", err);

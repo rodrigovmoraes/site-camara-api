@@ -26,7 +26,7 @@ module.exports.getEvents = function(req, res, next) {
    if(!unlimitedMinDate) {
       minDate = req.query.minDate ?
                      req.query.minDate :
-                     Utils.getDateSomeMonthsBeforeFromNow(config.CamaraApi.GoogleCalendarService.utcOffset, 3);
+                     Utils.getDateSomeMonthsBeforeFromNow(config.CamaraApi.GoogleCalendarService.utcOffset, 2);
    } else {
       minDate = null;
    }
@@ -34,7 +34,7 @@ module.exports.getEvents = function(req, res, next) {
    if(!unlimitedMaxDate) {
       maxDate = req.query.maxDate ?
                     req.query.maxDate :
-                    Utils.getDateSomeMonthsAfterFromNow(config.CamaraApi.GoogleCalendarService.utcOffset, 3);
+                    Utils.getDateSomeMonthsAfterFromNow(config.CamaraApi.GoogleCalendarService.utcOffset, 2);
    } else {
       maxDate = null;
    }

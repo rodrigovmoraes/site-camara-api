@@ -95,6 +95,10 @@ module.exports.setMongoose = function(mongoose) {
    _mongoose = mongoose;
 }
 
+module.exports.getMongoose = function() {
+   return _mongoose;
+}
+
 module.exports.getModel = function() {
    //if the model hasn´t been initialized, we should create the schema
    if(!_modelInitialized) {

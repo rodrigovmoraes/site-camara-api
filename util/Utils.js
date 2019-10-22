@@ -228,7 +228,7 @@ module.exports.getDateSomeMonthsAfterFromNow = function(utcOffsetValue, months) 
    var utcOffset = _.padStart(Math.abs(utcOffsetValue), 2, '0');
    var dateStr = year + "-" + month + "-" + day + "T23:59:59" + (utcOffsetValue >= 0 ? "+" : "-") + utcOffset + ":00";
 
-   var rdate = new Date(dateStr);
+   var rdate = new Date(dateStr).toISOString();
    return rdate;
 }
 
@@ -260,7 +260,7 @@ module.exports.getDateSomeMonthsBeforeFromNow = function(utcOffsetValue, months)
    var utcOffset = _.padStart(Math.abs(utcOffsetValue), 2, '0');
    var dateStr = year + "-" + month + "-" + day + "T00:00:00" + (utcOffsetValue >= 0 ? "+" : "-") + utcOffset + ":00";
 
-   var rdate = new Date(dateStr);
+   var rdate = (new Date(dateStr)).toISOString();
    return rdate;
 }
 

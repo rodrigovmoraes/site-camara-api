@@ -163,9 +163,6 @@ module.exports.newUserGroup = function(req, res, next) {
                winston.error("Error while creating the user group, err = [%s]", err);
                Utils.next(400, err, next);
             }
-         }).catch(function(err) {
-            winston.error("Error while saving the user group, err = [%s]", err);
-            Utils.next(400, err, next);
          });
    } else {
       Utils.sendJSONresponse(res, 400, { message: 'undefined user group' });

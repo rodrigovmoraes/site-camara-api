@@ -152,7 +152,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.options('*', cors());
 app.use(fileUpload({
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: camaraApiConfig.fileUploadLimit },
 }));
 //routes config
 // portal routes

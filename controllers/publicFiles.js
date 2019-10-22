@@ -11,6 +11,7 @@ var Utils = require('../util/Utils.js');
 var _ = require('lodash');
 var Minio = require('minio');
 var config = require('config');
+var jschardet = require("jschardet")
 
 /*****************************************************************************
 ******************************* PRIVATE **************************************
@@ -585,7 +586,7 @@ module.exports.moveFolderDown = function(req, res, next) {
                      return;
                   }
                   if (publicFolder.order < objectsAmount - 1) { //if the folder is the last
-                                                                         //it can't move down
+                                                                //it can't move down
                      //find the below object, file or folder
                      return _findOneFileOrFolder({
                               folder:  publicFolder.folder,
@@ -985,6 +986,12 @@ module.exports.uploadPublicFile = function(req, res, next) {
    var publicFile = req.files.file;
    var fileName = req.params.fileName;
    var folderId = req.params.folderId;
+   var htmlCharset = "";
+   //if it is a html file set charset
+   if (publicFile.mimetype === 'text/html') {
+      htmlCharset = jschardet.detect(publicFile.data);
+      publicFile.mimetype += "; charset=" + htmlCharset.encoding;
+   }
 
    if (!fileName) {
       Utils.sendJSONresponse(res, 400, { message: 'file name required.' });

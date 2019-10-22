@@ -19,8 +19,13 @@ var _createModelSchema = function(mongoose) {
         type: String,
         required: true,
         unique: false
-     },     
-     views: {
+     },
+     tag: {
+        type: String,
+        required: false,
+        unique: false,
+        default: null
+     },views: {
         type: Number,
         required: true,
         unique: false,
@@ -39,6 +44,16 @@ var _createModelSchema = function(mongoose) {
      body: {
         type: String,
         contentType: String
+     },
+     enableFacebookComments: {
+        type: Boolean,
+        required: false,
+        unique: false
+     },
+     enableFacebookShareButton: {
+        type: Boolean,
+        required: false,
+        unique: false
      }
    });
 

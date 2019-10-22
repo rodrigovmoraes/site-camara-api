@@ -113,6 +113,8 @@ var _migrate = async function(connection, newsItems) {
    var total;
    var progress;
    var lastProgress = -1;
+   var hasThumbnail = false;
+   var thumbnailUrl = "";
 
    try {
       if (newsItems) {
@@ -132,11 +134,14 @@ var _migrate = async function(connection, newsItems) {
                }
                contentType = _getContentType(extension);
                thumbnailFile = await _putFile(fileBuffer, contentType, extension, config.CamaraApi.News.s3Thumbnails.width, config.CamaraApi.News.s3Thumbnails.height);
+               hasThumbnail = true;
+               thumbnailUrl = config.CamaraApi.News.s3Thumbnails.urlBase + "/" + thumbnailFile;
             } else {
                fileBuffer = fs.readFileSync("./migration/brasao.jpg", { flag: 'r' });
                extension = "jpg";
                contentType = _getContentType(extension);
                thumbnailFile = await _putFile(fileBuffer, contentType, extension, config.CamaraApi.News.s3Thumbnails.width, config.CamaraApi.News.s3Thumbnails.height);
+               hasThumbnail = false;
             }
 
             newsItem = new NewsItem();
@@ -148,7 +153,12 @@ var _migrate = async function(connection, newsItems) {
             newsItem.thumbnailFile = thumbnailFile;
             newsItem.creationDate = new Date();
             newsItem.changedDate = null;
-            newsItem.body = newsItems[k].txt_noticia;
+            if (hasThumbnail) {
+               newsItem.body = "<div><img src=\"" + thumbnailUrl + "\" style=\"margin: 30px 0px 10px 10px;\" width=\"200\" height=\"129\" align=\"right\"></div>" + newsItems[k].txt_noticia;
+            } else {
+               newsItem.body = newsItems[k].txt_noticia;
+            }
+
             await newsItem.save();
             //show progress
             progress = Math.round(k / total * 100);
@@ -166,7 +176,7 @@ var _migrate = async function(connection, newsItems) {
 *********************************** BEGIN ************************************
 ******************************************************************************/
 module.exports.run = async function () {
-   winston.info("************migratePublicFiles");
+   winston.info("************migrateNews");
    var connectionPool = MySQLDatabase.createConnectionPool({
             "host": "camarasorocaba.sp.gov.br",
             "user": "admin",

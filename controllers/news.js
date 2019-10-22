@@ -31,6 +31,8 @@ module.exports.newNewsItem = function(req, res, next) {
       newsItem.headline = newsItemJSON.headline;
       newsItem.publish = newsItemJSON.publish;
       newsItem.thumbnailFile = newsItemJSON.thumbnailFile;
+      newsItem.enableFacebookComments = newsItemJSON.enableFacebookComments;
+      newsItem.enableFacebookShareButton = newsItemJSON.enableFacebookShareButton;
       if (newsItemJSON.publish) {
          newsItem.publicationDate = newsItemJSON.publicationDate ? newsItemJSON.publicationDate : now;
       } else {
@@ -67,6 +69,8 @@ module.exports.editNewsItem = function(req, res, next) {
             newsItem.headline = newsItemJSON.headline;
             newsItem.publish = newsItemJSON.publish;
             newsItem.thumbnailFile = newsItemJSON.thumbnailFile;
+            newsItem.enableFacebookComments = newsItemJSON.enableFacebookComments;
+            newsItem.enableFacebookShareButton = newsItemJSON.enableFacebookShareButton;
             if (newsItemJSON.publish) {
                newsItem.publicationDate = newsItemJSON.publicationDate ? newsItemJSON.publicationDate : now;
             } else {
@@ -451,7 +455,9 @@ module.exports.getNewsItem = function(req, res, next) {
                  'body': newsItem.body,
                  'creationDate': newsItem.creationDate,
                  'changedDate': newsItem.changedDate,
-                 'views': newsItem.views
+                 'views': newsItem.views,
+                 'enableFacebookComments': newsItem.enableFacebookComments ? newsItem.enableFacebookComments : null,
+                 'enableFacebookShareButton': newsItem.enableFacebookShareButton ? newsItem.enableFacebookShareButton : null
             };
 
             Utils.sendJSONresponse(res, 200, {

@@ -107,9 +107,6 @@ module.exports.newMenuItem = function(req, res, next) {
             winston.error("Error while creating the menu item, err = [%s]", err);
             Utils.next(400, err, next);
          }
-      }).catch(function(err) {
-         winston.error("Error while saving the new menu item, err = [%s]", err);
-         Utils.next(400, err, next);
       });
    } else {
       Utils.sendJSONresponse(res, 400, { message: 'undefined menu item' });

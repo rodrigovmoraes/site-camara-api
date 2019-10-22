@@ -3,7 +3,8 @@
 ******************************* (LIBS MODULES) *******************************
 /*****************************************************************************/
 var passport = require('passport');
-var User = require('../models/User.js').getModel();
+var UserModule = require('../models/User.js');
+var User = UserModule.getModel();
 var LocalStrategy = require('passport-local').Strategy;
 var Util = require('../util/Utils.js');
 var winston = require('winston');
@@ -67,7 +68,7 @@ module.exports.loginController = function(req, res) {
       winston.error("Server error during login process: " + err.message);
       Util.sendJSONErrorResponse(res, 500, err);
       return;
-   } else if(user) {
+   } else if (user) {
       //ok
       //generate the jwt token and give it to the client
       token = user.generateJwt();
@@ -81,11 +82,9 @@ module.exports.loginController = function(req, res) {
       }).catch(function(err) {
          winston.error("Server error while getting roles of the user for future security queries: " + err.message);
       });
-
     } else {
       //invalid credentials
       Util.sendJSONresponse(res, 401, info);
     }
   })(req, res);
-
 };

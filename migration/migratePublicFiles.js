@@ -16,9 +16,9 @@ var PublicFileModule = require('../models/PublicFile.js');
 var PublicFile = PublicFileModule.getModel();
 var PublicFolderModule = require('../models/PublicFolder.js');
 var PublicFolder = PublicFolderModule.getModel();
-
 var qtdFilesProcessed = 0;
 var lastProgress = 0;
+
 
 /*****************************************************************************
 *************************** DEPENDENCIES SECTION *****************************
@@ -52,6 +52,9 @@ var queryGetFolderFolders = "SELECT id, " +
 
 var queryCountFiles =   "SELECT COUNT(1) as files_count " +
                         "FROM   arquivo a ";
+
+//map for oldId to folder
+var _foldersMap = {};
 
 //*****************************************************************************
 var _putFile = function(filePath, fileBuffer, contentType) {
@@ -99,6 +102,7 @@ var _migrateFolder = function(connection, folder, folderName, parentFolder, root
    return publicFolder
             .save()
             .then(function(pnewFolder) {
+               _foldersMap[folder.id] = pnewFolder;
                newFolder = pnewFolder;
                return _getFiles(connection, folder.id);
             }).then(async function(files) {
@@ -116,8 +120,8 @@ var _migrateFolder = function(connection, folder, folderName, parentFolder, root
 
                   publicFile = new PublicFile();
                   publicFile.creationDate = new Date();
-                  publicFile.length = 0;
-                  publicFile.order = subfoldersCount + i + 1;
+                  publicFile.length = fileBuffer.length;
+                  publicFile.order = subfoldersCount + i;
                   publicFile.isFolder = false;
                   publicFile.creationUser = createUserScript.getUser();
                   publicFile.folder = newFolder;
@@ -168,7 +172,7 @@ var _migrate = async function(connection, rootFolder, filesCount) {
             for (i = 0; i < subfolders.length; i++) {
                subfolders[i].parentFolder = newFolder;
                subfolders[i].rootFolderPath = currentFolder.isRoot ? "" : currentFolder.rootFolderPath + "/" + currentFolderName;
-               subfolders[i].order = i + 1;
+               subfolders[i].order = i;
                queue.push(subfolders[i]);
             }
          }
@@ -181,6 +185,14 @@ var _migrate = async function(connection, rootFolder, filesCount) {
 /*****************************************************************************
 *********************************** BEGIN ************************************
 ******************************************************************************/
+module.exports.getFolder = function (oldId) {
+   if ( _foldersMap[oldId] ) {
+      return _foldersMap[oldId];
+   } else {
+      return null;
+   }
+}
+
 module.exports.run = async function () {
    winston.info("************migratePublicFiles");
    var connectionPool = MySQLDatabase.createConnectionPool({

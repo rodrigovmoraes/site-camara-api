@@ -58,8 +58,26 @@ var _createModelSchema = function(mongoose) {
      body: {
         type: String,
         contentType: String
+     },
+     enableFacebookShareButton: {
+        type: Boolean,
+        required: false,
+        unique: false
+     },
+     enableFacebookComments: {
+        type: Boolean,
+        required: false,
+        unique: false
      }
    });
+
+   // number/type must be unique
+   newsItemSchema.index({ publish: 1, publicationDate: 1, creationDate: 1, changedDate: 1 });
+   newsItemSchema.index({ publish: 1, publicationDate: -1, creationDate: -1, changedDate: -1 });
+   newsItemSchema.index({ publish: 1, publicationDate: 1 });
+   newsItemSchema.index({ publicationDate: 1 });
+   newsItemSchema.index({ creationDate: 1 });
+   newsItemSchema.index({ changedDate: 1 });
 
    return newsItemSchema;
 }

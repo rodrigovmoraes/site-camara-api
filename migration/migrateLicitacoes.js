@@ -70,7 +70,9 @@ var _getContentType = function(extension) {
          return "image/jpeg";
       } else if(extension.toLowerCase() === 'png') {
          return "image/png";
-      } else {
+      } else if(extension.toLowerCase() === 'dwg') {
+         return "application/octet-stream";
+      }else {
          console.log("Content-type not found in the table, extension = [" + extension + "]")
          return "application/octet-stream";
       }
@@ -79,9 +81,9 @@ var _getContentType = function(extension) {
 //*****************************************************************************
 var _getFileName = function(contentDisposition) {
 
-   function _replaceAll(str, from, to){
+   function _replaceAll (str, from, to) {
        var pos = str.indexOf(from);
-       while (pos > -1){
+       while (pos > -1) {
    		str = str.replace(from, to);
    		pos = str.indexOf(from);
    	 }
@@ -163,7 +165,6 @@ var _putFileAttachment = function (fileName, fileData, fileLength, contentType) 
 }
 //*****************************************************************************
 var _insertLicitacaoCategory = async function (fromMysqlDatabaseLicitacaoCategory) {
-
    var licitacaoCategory = new LicitacaoCategory();
    licitacaoCategory.description = fromMysqlDatabaseLicitacaoCategory.desc_modalidade;
    return licitacaoCategory.save();

@@ -111,6 +111,16 @@ var _createModelSchema = function(mongoose) {
    });
    // number/type must be unique
    legislativePropositionSchema.index({ type: 1, number: 1 }, { unique: true });
+   legislativePropositionSchema.index({ number: 1 });
+   legislativePropositionSchema.index({ creationDate: 1 });
+   legislativePropositionSchema.index({ date: 1 });
+   legislativePropositionSchema.index({ changedDate: 1 });
+   legislativePropositionSchema.index({ type: 1 });
+
+   legislativePropositionSchema.index({ number: 1 , creationDate: 1 });
+   legislativePropositionSchema.index({ date: 1 , creationDate: 1 , changedDate: 1 });
+   legislativePropositionSchema.index({ changedDate: 1 , date: 1 , creationDate: 1 });
+   legislativePropositionSchema.index({ type: 1 , creationDate: 1 });
 
    return legislativePropositionSchema;
 }

@@ -65,9 +65,6 @@ module.exports.saveMenuItem = function(req, res, next) {
                Utils.next(400, err, next);
             }
          });
-      }).catch(function(err) {
-         winston.error("Error while saving the menu item, err = [%s]", err);
-         Utils.next(400, err, next);
       });
    } else {
       Utils.sendJSONresponse(res, 400, { message: 'undefined menu item' });

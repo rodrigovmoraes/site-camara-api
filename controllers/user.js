@@ -3,10 +3,12 @@
 ******************************* (LIBS MODULES) *******************************
 /*****************************************************************************/
 var winston = require('winston');
-var User = require('../models/User.js').getModel();
+var UserModule = require('../models/User.js');
+var User = UserModule.getModel();
 var UserService = require('../services/UserService.js');
 var ServerGridUtils = require('../util/ServerGridUtils.js');
 var Utils = require('../util/Utils.js');
+var messages = require('../services/messages.js');
 var _ = require('lodash');
 
 /*****************************************************************************
@@ -62,7 +64,7 @@ module.exports.newUser = function(req, res, next) {
       newUser.roles = [];
       newUser.primaryGroup = newUserJSON.primaryGroup;
       newUser.creationDate = new Date();
-      newUser.status = 'Ativo';
+      newUser.status = true;
 
       winston.debug("Saving new user ...");
 
@@ -196,3 +198,38 @@ module.exports.checkAccess = function(req, res, next) {
       Utils.sendJSONresponse(res, 400, { message: 'role undefined' });
    }
 }
+
+//change password process controller
+module.exports.changePasswordController = function(req, res) {
+   if (!req.payload) {
+      Utils.sendJSONresponse(res, 403, { message: 'you must be logged in' });
+   } else if (!req.body.password || !req.body.newPassword) {
+      Utils.sendJSONresponse(res, 400, {
+         "message":  messages.allFieldsRequired
+      });
+   } else {
+      var password = req.body.password;
+      var newPassword = req.body.newPassword;
+
+      User.findOne({ '_id':  UserModule.getMongoose().Types.ObjectId(req.payload._id) }, function (err, user) {
+         if (err) { //something is wrong with db server
+            winston.error("Error while checking password in order to change the user password, err = [%s]", err);
+            Utils.next(400, err, next);
+         } else if (!user) { //invalid credentials, user not found
+           Utils.sendJSONresponse(res, 400, { message: messages.invalidCredentials, passwordError: true });
+         } else if (!user.validPassword(password) || !user.status) {
+            Utils.sendJSONresponse(res, 400, { message: messages.invalidCredentials, passwordError: true });
+         } else {
+            //change the password
+            user.setPassword(newPassword);
+            user.save(function (err) {
+              if (err) {
+                 Utils.next(400, err, next);
+              } else {
+                 Utils.sendJSONresponse(res, 200, { message: 'password changed' });
+              }
+            });
+         }
+      });
+   }
+};
