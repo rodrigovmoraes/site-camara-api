@@ -32,7 +32,7 @@ module.exports.run = async function () {
                               };
    fBreakingNewsItem.order = 1;
    fBreakingNewsItem.deleted = false;
-   await securityRoles.save();
+   await fBreakingNewsItem.save();
 
    //fixed breaking news 2
    fBreakingNewsItem = new FBreakingNewsItem();
@@ -47,7 +47,7 @@ module.exports.run = async function () {
                               };
    fBreakingNewsItem.order = 2;
    fBreakingNewsItem.deleted = false;
-   await securityRoles.save();
+   await fBreakingNewsItem.save();
 
    //fixed breaking news 3
    fBreakingNewsItem = new FBreakingNewsItem();
@@ -62,7 +62,7 @@ module.exports.run = async function () {
                               };
    fBreakingNewsItem.order = 3;
    fBreakingNewsItem.deleted = false;
-   await securityRoles.save();
+   await fBreakingNewsItem.save();
 
    return Promise.resolve(true);
 }
