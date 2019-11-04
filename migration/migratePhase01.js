@@ -143,14 +143,14 @@ DbModule.connect(async function(mongoose, connection) {
    await createUser.run();
    await migrateUsers.run();
 
-   //await migratePublicFiles.run();
-   //await migratePrestaContas.run();
-   //await migrateMenuAdmin.run();
-   //await migrateMenuPortal.run();
-   //await migrateLegislativePropositions.run();
+   await migratePublicFiles.run();
+   await migratePrestaContas.run();
+   await migrateMenuAdmin.run();
+   await migrateMenuPortal.run();
+   await migrateLegislativePropositions.run();
    await migrateFBreakingNews.run();
-   //await migrateNews.run();
-   //await migrateLicitacoes.run();
+   await migrateNews.run();
+   await migrateLicitacoes.run();
 
    //close mongodb connection
    DbModule.close();
