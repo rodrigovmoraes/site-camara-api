@@ -21,7 +21,7 @@ module.exports.run = async function () {
 
    //fixed breaking news 1
    fBreakingNewsItem = new FBreakingNewsItem();
-   fBreakingNewsItem.headline: "Headline 1";
+   fBreakingNewsItem.headline = "Headline 1";
    fBreakingNewsItem.headlineIcon = "ion-ios7-people";
    fBreakingNewsItem.title = "Fixed breaking news 1";
    fBreakingNewsItem.date = new Date();
@@ -37,7 +37,7 @@ module.exports.run = async function () {
 
    //fixed breaking news 2
    fBreakingNewsItem = new FBreakingNewsItem();
-   fBreakingNewsItem.headline: "Headline 2";
+   fBreakingNewsItem.headline = "Headline 2";
    fBreakingNewsItem.headlineIcon = "ion-ios7-people";
    fBreakingNewsItem.title = "Fixed breaking news 2";
    fBreakingNewsItem.date = new Date();
@@ -53,7 +53,7 @@ module.exports.run = async function () {
 
    //fixed breaking news 3
    fBreakingNewsItem = new FBreakingNewsItem();
-   fBreakingNewsItem.headline: "Headline 3";
+   fBreakingNewsItem.headline = "Headline 3";
    fBreakingNewsItem.headlineIcon = "ion-ios7-people";
    fBreakingNewsItem.title = "Fixed breaking news 3";
    fBreakingNewsItem.date = new Date();
