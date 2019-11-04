@@ -47,6 +47,7 @@ var LegislativePropositionFileAttachment = require('../models/LegislativeProposi
 var LegislativePropositionRelationshipType = require('../models/LegislativePropositionRelationshipType.js');
 var LegislativePropositionTag = require('../models/LegislativePropositionTag.js');
 var LegislativePropositionType = require('../models/LegislativePropositionType.js');
+var FBreakingNewsItem = require('../models/FBreakingNewsItem.js');
 var PublicFile = require('../models/PublicFile.js');
 var PublicFolder = require('../models/PublicFolder.js');
 var UserGroupModule = require('../models/UserGroup.js');
@@ -89,6 +90,9 @@ DbModule.connect(async function(mongoose, connection) {
    //LegislativePropositionType Model
    LegislativePropositionType.setMongoose(mongoose);
    LegislativePropositionType.setConnection(connection);
+   //Fixed Breaking News Item Model
+   FBreakingNewsItem.setMongoose(mongoose);
+   FBreakingNewsItem.setConnection(connection);
    //PublicFile Model
    PublicFile.setMongoose(mongoose);
    PublicFile.setConnection(connection);
@@ -123,6 +127,7 @@ DbModule.connect(async function(mongoose, connection) {
    var migrateMenuAdmin = require('./migrateMenuAdmin');
 
    var migrateLegislativePropositions = require('./migrateLegislativePropositions');
+   var migrateFBreakingNews = require('./migrateFBreakingNews');
    var migratePublicFiles = require('./migratePublicFiles');
    var migratePrestaContas = require('./migratePrestaContas');
    var migrateNews = require('./migrateNews');
@@ -138,13 +143,14 @@ DbModule.connect(async function(mongoose, connection) {
    await createUser.run();
    await migrateUsers.run();
 
-   await migratePublicFiles.run();
-   await migratePrestaContas.run();
-   await migrateMenuAdmin.run();
-   await migrateMenuPortal.run();
-   await migrateLegislativePropositions.run();
-   await migrateNews.run();
-   await migrateLicitacoes.run();
+   //await migratePublicFiles.run();
+   //await migratePrestaContas.run();
+   //await migrateMenuAdmin.run();
+   //await migrateMenuPortal.run();
+   //await migrateLegislativePropositions.run();
+   await migrateFBreakingNews.run();
+   //await migrateNews.run();
+   //await migrateLicitacoes.run();
 
    //close mongodb connection
    DbModule.close();
