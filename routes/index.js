@@ -10,6 +10,7 @@ var router = express.Router();
 ******************************* (APP MODULES) ********************************
 /*****************************************************************************/
 var securityMiddlewares = require('../middlewares/security.js');
+var purgeCache = require('../middlewares/purgeCache.js');
 var hasRole = securityMiddlewares.hasRole;
 var isLogged = securityMiddlewares.isLogged;
 
@@ -80,23 +81,23 @@ router.post('/menuItemAdmin/updateOrders', hasRole('WRITE_MENU_ADMIN'), menuAdmi
 
 //menu portal
 router.get('/menuPortalTree', menuPortalControllers.getMenuPortalTree);
-router.post('/menuItemPortal', hasRole('WRITE_MENU_PORTAL'), menuPortalControllers.saveMenuItem);
-router.put('/menuItemPortal', hasRole('WRITE_MENU_PORTAL'), menuPortalControllers.newMenuItem);
-router.delete('/menuItemPortal/deeply/:id', hasRole('DELETE_MENU_PORTAL'), menuPortalControllers.deleteDeeplyMenuItem);
-router.post('/menuItemPortal/updateOrders', hasRole('WRITE_MENU_PORTAL'), menuPortalControllers.updateMenuItemsOrders);
+router.post('/menuItemPortal', hasRole('WRITE_MENU_PORTAL'), purgeCache, menuPortalControllers.saveMenuItem);
+router.put('/menuItemPortal', hasRole('WRITE_MENU_PORTAL'), purgeCache, menuPortalControllers.newMenuItem);
+router.delete('/menuItemPortal/deeply/:id', hasRole('DELETE_MENU_PORTAL'), purgeCache, menuPortalControllers.deleteDeeplyMenuItem);
+router.post('/menuItemPortal/updateOrders', hasRole('WRITE_MENU_PORTAL'), purgeCache, menuPortalControllers.updateMenuItemsOrders);
 
 //news
 router.get('/newsItems', newsControllers.getNews);
 router.get('/newsItem/:newsItemId', newsControllers.getNewsItem);
 router.get('/incrementNewsViews/:newsItemId', newsControllers.getIncrementNewsViews);
-router.post('/newsItem', hasRole('WRITE_NEWS'), newsControllers.editNewsItem);
-router.put('/newsItem', hasRole('WRITE_NEWS'), newsControllers.newNewsItem);
+router.post('/newsItem', hasRole('WRITE_NEWS'), purgeCache, newsControllers.editNewsItem);
+router.put('/newsItem', hasRole('WRITE_NEWS'), purgeCache, newsControllers.newNewsItem);
 router.put('/newsItem/wysiwyg/fileAttachment', hasRole('WRITE_NEWS'), newsControllers.uploadWysiwygFileAttachment);
 router.put('/newsItem/wysiwyg/fileImageAttachment', hasRole('WRITE_NEWS'), newsControllers.uploadWysiwygFileImageAttachment);
 router.put('/newsItem/wysiwyg/fileVideoAttachment', hasRole('WRITE_NEWS'), newsControllers.uploadWysiwygFileVideoAttachment);
 router.put('/newsItem/thumbnail/:uuid', hasRole('WRITE_NEWS'), newsControllers.uploadThumbnail);
 router.delete('/newsItem/thumbnail/:fileName', hasRole('WRITE_NEWS'), newsControllers.deleteThumbnail);
-router.delete('/newsItem/:newsItemId', hasRole('DELETE_NEWS'), newsControllers.removeNewsItem);
+router.delete('/newsItem/:newsItemId', hasRole('DELETE_NEWS'), purgeCache, newsControllers.removeNewsItem);
 
 //pages
 router.get('/pages', pagesControllers.getPages);
@@ -104,61 +105,61 @@ router.get('/page/checkUnique/:tag', hasRole('READ_PAGE'), pagesControllers.chec
 router.get('/page/tag/:tag', pagesControllers.getPageByTag);
 router.get('/page/:pageId', pagesControllers.getPage);
 router.get('/incrementPageViews/:pageId', pagesControllers.getIncrementPageViews);
-router.post('/page', hasRole('WRITE_PAGE'), pagesControllers.editPage);
-router.put('/page', hasRole('WRITE_PAGE'), pagesControllers.newPage);
+router.post('/page', hasRole('WRITE_PAGE'), purgeCache, pagesControllers.editPage);
+router.put('/page', hasRole('WRITE_PAGE'), purgeCache, pagesControllers.newPage);
 router.put('/page/wysiwyg/fileAttachment', hasRole('WRITE_PAGE'), pagesControllers.uploadWysiwygFileAttachment);
 router.put('/page/wysiwyg/fileImageAttachment', hasRole('WRITE_PAGE'), pagesControllers.uploadWysiwygFileImageAttachment);
 router.put('/page/wysiwyg/fileVideoAttachment', hasRole('WRITE_PAGE'), pagesControllers.uploadWysiwygFileVideoAttachment);
-router.delete('/page/:pageId', hasRole('DELETE_PAGE'), pagesControllers.removePage);
+router.delete('/page/:pageId', hasRole('DELETE_PAGE'), purgeCache, pagesControllers.removePage);
 
 //banners
 router.put('/banner/image/:uuid', hasRole('WRITE_BANNER'), bannersControllers.uploadBannerImage);
-router.put('/banner', hasRole('WRITE_BANNER'), bannersControllers.newBanner);
-router.post('/banner', hasRole('WRITE_BANNER'), bannersControllers.editBanner);
+router.put('/banner', hasRole('WRITE_BANNER'), purgeCache, bannersControllers.newBanner);
+router.post('/banner', hasRole('WRITE_BANNER'), purgeCache, bannersControllers.editBanner);
 router.delete('/banner/image/:fileName', hasRole('WRITE_BANNER'), bannersControllers.deleteBannerImage);
 router.get('/banners', bannersControllers.getBanners);
-router.get('/banner/:bannerId/moveUp', hasRole('WRITE_BANNER'), bannersControllers.moveBannerUp);
-router.get('/banner/:bannerId/moveDown', hasRole('WRITE_BANNER'), bannersControllers.moveBannerDown);
+router.get('/banner/:bannerId/moveUp', hasRole('WRITE_BANNER'), purgeCache, bannersControllers.moveBannerUp);
+router.get('/banner/:bannerId/moveDown', hasRole('WRITE_BANNER'),purgeCache, bannersControllers.moveBannerDown);
 router.get('/banner/:bannerId', hasRole('READ_BANNER'), bannersControllers.getBanner);
-router.delete('/banner/:bannerId', hasRole('DELETE_BANNER'), bannersControllers.removeBanner);
+router.delete('/banner/:bannerId', hasRole('DELETE_BANNER'), purgeCache, bannersControllers.removeBanner);
 
 //hot news
-router.put('/hotnews', hasRole('WRITE_HOTNEWS'), hotNewsControllers.newHotNewsItem);
-router.post('/hotnews', hasRole('WRITE_HOTNEWS'), hotNewsControllers.editHotNewsItem);
+router.put('/hotnews', hasRole('WRITE_HOTNEWS'), purgeCache, hotNewsControllers.newHotNewsItem);
+router.post('/hotnews', hasRole('WRITE_HOTNEWS'), purgeCache, hotNewsControllers.editHotNewsItem);
 router.get('/hotnews/:hotNewsItemId', hasRole('READ_HOTNEWS'), hotNewsControllers.getHotNewsItem);
 router.get('/hotnews', hotNewsControllers.getHotNewsItems);
-router.get('/hotnews/:hotNewsItemId/moveUp', hasRole('WRITE_HOTNEWS'), hotNewsControllers.moveHotNewsItemUp);
-router.get('/hotnews/:hotNewsItemId/moveDown', hasRole('WRITE_HOTNEWS'), hotNewsControllers.moveHotNewsItemDown);
-router.delete('/hotnews/:hotNewsItemId', hasRole('DELETE_HOTNEWS'), hotNewsControllers.removeHotNewsItem);
+router.get('/hotnews/:hotNewsItemId/moveUp', hasRole('WRITE_HOTNEWS'), purgeCache, hotNewsControllers.moveHotNewsItemUp);
+router.get('/hotnews/:hotNewsItemId/moveDown', hasRole('WRITE_HOTNEWS'), purgeCache, hotNewsControllers.moveHotNewsItemDown);
+router.delete('/hotnews/:hotNewsItemId', hasRole('DELETE_HOTNEWS'), purgeCache, hotNewsControllers.removeHotNewsItem);
 
 //breaking news
 router.put('/breakingNews/image/:uuid', hasRole('WRITE_BREAKINGNEWS'), breakingNewsControllers.uploadBreakingNewsItemImage);
-router.put('/breakingNews', hasRole('WRITE_BREAKINGNEWS'), breakingNewsControllers.newBreakingNewsItem);
-router.post('/breakingNews', hasRole('WRITE_BREAKINGNEWS'), breakingNewsControllers.editBreakingNewsItem);
+router.put('/breakingNews', hasRole('WRITE_BREAKINGNEWS'), purgeCache, breakingNewsControllers.newBreakingNewsItem);
+router.post('/breakingNews', hasRole('WRITE_BREAKINGNEWS'), purgeCache, breakingNewsControllers.editBreakingNewsItem);
 router.delete('/breakingNews/image/:fileName', hasRole('WRITE_BREAKINGNEWS'), breakingNewsControllers.deleteBreakingNewsItemImage);
 router.get('/breakingNews/:breakingNewsItemId', hasRole('READ_BREAKINGNEWS'), breakingNewsControllers.getBreakingNewsItem);
 router.get('/breakingNews', breakingNewsControllers.getBreakingNewsItems);
-router.get('/breakingNews/:breakingNewsItemId/moveUp', hasRole('WRITE_BREAKINGNEWS'), breakingNewsControllers.moveBreakingNewsItemUp);
-router.get('/breakingNews/:breakingNewsItemId/moveDown', hasRole('WRITE_BREAKINGNEWS'), breakingNewsControllers.moveBreakingNewsItemDown);
-router.delete('/breakingNews/:breakingNewsItemId', hasRole('DELETE_BREAKINGNEWS'), breakingNewsControllers.removeBreakingNewsItem);
+router.get('/breakingNews/:breakingNewsItemId/moveUp', hasRole('WRITE_BREAKINGNEWS'), purgeCache, breakingNewsControllers.moveBreakingNewsItemUp);
+router.get('/breakingNews/:breakingNewsItemId/moveDown', hasRole('WRITE_BREAKINGNEWS'), purgeCache, breakingNewsControllers.moveBreakingNewsItemDown);
+router.delete('/breakingNews/:breakingNewsItemId', hasRole('DELETE_BREAKINGNEWS'), purgeCache, breakingNewsControllers.removeBreakingNewsItem);
 
 //fixed breaking news
 router.put('/fbreakingNews/image/:uuid', hasRole('WRITE_FIXED_BREAKINGNEWS'), fbreakingNewsControllers.uploadFBreakingNewsItemImage);
-router.post('/fbreakingNews', hasRole('WRITE_FIXED_BREAKINGNEWS'), fbreakingNewsControllers.editFBreakingNewsItem);
+router.post('/fbreakingNews', hasRole('WRITE_FIXED_BREAKINGNEWS'), purgeCache, fbreakingNewsControllers.editFBreakingNewsItem);
 router.delete('/fbreakingNews/image/:fileName', hasRole('WRITE_FIXED_BREAKINGNEWS'), fbreakingNewsControllers.deleteFBreakingNewsItemImage);
 router.get('/fbreakingNews/:fbreakingNewsItemId', hasRole('READ_FIXED_BREAKINGNEWS'), fbreakingNewsControllers.getFBreakingNewsItem);
 router.get('/fbreakingNews', fbreakingNewsControllers.getFBreakingNewsItems);
-router.delete('/fbreakingNews/:fbreakingNewsItemId', hasRole('DELETE_FIXED_BREAKINGNEWS'), fbreakingNewsControllers.removeFBreakingNewsItem);
+router.delete('/fbreakingNews/:fbreakingNewsItemId', hasRole('DELETE_FIXED_BREAKINGNEWS'), purgeCache, fbreakingNewsControllers.removeFBreakingNewsItem);
 
 //licitacoes
 router.get('/licitacoes', licitacoesControllers.getLicitacoes);
-router.post('/licitacao', hasRole('WRITE_LICITACAO'), licitacoesControllers.editLicitacao);
-router.put('/licitacao', hasRole('WRITE_LICITACAO'), licitacoesControllers.newLicitacao);
+router.post('/licitacao', hasRole('WRITE_LICITACAO'), purgeCache, licitacoesControllers.editLicitacao);
+router.put('/licitacao', hasRole('WRITE_LICITACAO'), purgeCache, licitacoesControllers.newLicitacao);
 router.delete('/licitacao/event/file/:fileName', hasRole('WRITE_LICITACAO'), licitacoesControllers.deleteEventFile);
-router.delete('/licitacao/event/:licitacaoId/:eventId', hasRole('DELETE_LICITACAO'), licitacoesControllers.removeLicitacaoEvent);
-router.delete('/licitacao/:licitacaoId', hasRole('DELETE_LICITACAO'), licitacoesControllers.removeLicitacao);
-router.get('/licitacao/publish/:licitacaoId', hasRole('WRITE_LICITACAO'), licitacoesControllers.publishLicitacao);
-router.get('/licitacao/unpublish/:licitacaoId', hasRole('WRITE_LICITACAO'), licitacoesControllers.unpublishLicitacao);
+router.delete('/licitacao/event/:licitacaoId/:eventId', hasRole('DELETE_LICITACAO'), purgeCache, licitacoesControllers.removeLicitacaoEvent);
+router.delete('/licitacao/:licitacaoId', hasRole('DELETE_LICITACAO'), purgeCache, licitacoesControllers.removeLicitacao);
+router.get('/licitacao/publish/:licitacaoId', hasRole('WRITE_LICITACAO'), purgeCache, licitacoesControllers.publishLicitacao);
+router.get('/licitacao/unpublish/:licitacaoId', hasRole('WRITE_LICITACAO'), purgeCache, licitacoesControllers.unpublishLicitacao);
 router.get('/licitacao/checkUniqueNumber/:year/:number/:category', hasRole('READ_LICITACAO'), licitacoesControllers.checkUniqueNumber);
 router.get('/licitacao/nextNumber/:year/:category', hasRole('READ_LICITACAO'), licitacoesControllers.getNextNumberOfTheYear);
 router.get('/licitacao/event/download/:eventId', licitacoesControllers.downloadEventFile);
@@ -170,15 +171,15 @@ router.get('/licitacao/events/all', licitacoesControllers.getAllLicitacoesEvents
 router.get('/licitacao/event/:eventId', hasRole('READ_LICITACAO'), licitacoesControllers.getLicitacaoEvent);
 router.get('/licitacao/:licitacaoId', licitacoesControllers.getLicitacao);
 router.put('/licitacao/event/file/:uuid', hasRole('WRITE_LICITACAO'), licitacoesControllers.uploadEventFile);
-router.put('/licitacao/event/:licitacaoId', hasRole('WRITE_LICITACAO'), licitacoesControllers.newLicitacaoEvent);
-router.post('/licitacao/event', hasRole('WRITE_LICITACAO'), licitacoesControllers.editLicitacaoEvent);
+router.put('/licitacao/event/:licitacaoId', hasRole('WRITE_LICITACAO'), purgeCache, licitacoesControllers.newLicitacaoEvent);
+router.post('/licitacao/event', hasRole('WRITE_LICITACAO'), purgeCache, licitacoesControllers.editLicitacaoEvent);
 
 //licitacoes categories
 router.get('/licitacoesCategories', licitacoesCategoriesControllers.getLicitacoesCategories);
 
 //legislative propositions
 router.get('/legislativePropositions', legislativePropositionsControllers.getLegislativePropositions);
-router.post('/legislativeProposition', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.editLegislativeProposition);
+router.post('/legislativeProposition', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), purgeCache, legislativePropositionsControllers.editLegislativeProposition);
 
 router.put('/legislativeProposition/wysiwyg/textFileAttachment', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.uploadWysiwygTextFileAttachment);
 router.put('/legislativeProposition/wysiwyg/textFileImageAttachment', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.uploadWysiwygTextFileImageAttachment);
@@ -191,10 +192,10 @@ router.put('/legislativeProposition/wysiwyg/consolidatedTextAttachmentFileImageA
 
 router.put('/legislativeProposition/attachment/file/:uuid', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.uploadAttachmentFile);
 router.put('/legislativeProposition/consolidatedAttachment/file/:uuid', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.uploadConsolidatedAttachmentFile);
-router.put('/legislativeProposition/attachment', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.newAttachmentFile);
-router.put('/legislativeProposition', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.newLegislativeProposition);
-router.delete('/legislativeProposition/attachment/:legislativePropositionFileAttachmentId', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.deleteFileAttachment);
-router.delete('/legislativeProposition/:legislativePropositionId', hasRole('DELETE_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.removeLegislativeProposition);
+router.put('/legislativeProposition/attachment', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), purgeCache, legislativePropositionsControllers.newAttachmentFile);
+router.put('/legislativeProposition', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), purgeCache, legislativePropositionsControllers.newLegislativeProposition);
+router.delete('/legislativeProposition/attachment/:legislativePropositionFileAttachmentId', hasRole('WRITE_LEGISLATIVE_PROPOSITION'), purgeCache, legislativePropositionsControllers.deleteFileAttachment);
+router.delete('/legislativeProposition/:legislativePropositionId', hasRole('DELETE_LEGISLATIVE_PROPOSITION'), purgeCache, legislativePropositionsControllers.removeLegislativeProposition);
 router.get('/legislativeProposition/byNumber/:legislativePropositionTypeId/:number', hasRole('READ_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.getLegislativePropositionByNumber);
 router.get('/legislativeProposition/checkUniqueNumber/:legislativePropositionTypeId/:number', hasRole('READ_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.checkUniqueNumber);
 router.get('/legislativeProposition/nextNumber/:legislativePropositionTypeId', hasRole('READ_LEGISLATIVE_PROPOSITION'), legislativePropositionsControllers.getNextNumberOfTheType);
@@ -206,12 +207,12 @@ router.get('/legislativePropositionTypes', legislativePropositionTypesController
 
 //legislative proposition tags
 router.get('/legislativePropositionTag/:legislativePropositionTagId', hasRole('READ_LEGISLATIVE_PROPOSITION_TAG'), legislativePropositionTagsControllers.getLegislativePropositionTag);
-router.put('/legislativePropositionTag', hasRole('WRITE_LEGISLATIVE_PROPOSITION_TAG'), legislativePropositionTagsControllers.newLegislativePropositionTag);
-router.post('/legislativePropositionTag', hasRole('WRITE_LEGISLATIVE_PROPOSITION_TAG'), legislativePropositionTagsControllers.editLegislativePropositionTag);
+router.put('/legislativePropositionTag', hasRole('WRITE_LEGISLATIVE_PROPOSITION_TAG'), purgeCache, legislativePropositionTagsControllers.newLegislativePropositionTag);
+router.post('/legislativePropositionTag', hasRole('WRITE_LEGISLATIVE_PROPOSITION_TAG'), purgeCache, legislativePropositionTagsControllers.editLegislativePropositionTag);
 router.get('/legislativePropositionTags/:legislativePropositionTypeId', legislativePropositionTagsControllers.getLegislativePropositionTags);
 router.get('/legislativePropositionTags', legislativePropositionTagsControllers.getAllLegislativePropositionTags);
 router.get('/checkUniquelegislativePropositionTagDescription/:legislativePropositionTypeId', hasRole('READ_LEGISLATIVE_PROPOSITION_TAG'), legislativePropositionTagsControllers.checkUniqueDescription);
-router.delete('/legislativePropositionTag/:legislativePropositionTagId', hasRole('DELETE_LEGISLATIVE_PROPOSITION_TAG'), legislativePropositionTagsControllers.removeLegislativePropositionTag);
+router.delete('/legislativePropositionTag/:legislativePropositionTagId', hasRole('DELETE_LEGISLATIVE_PROPOSITION_TAG'), purgeCache, legislativePropositionTagsControllers.removeLegislativePropositionTag);
 
 //legislative proposition relationship types
 router.get('/legislativePropositionRelationshipTypes', hasRole('READ_LEGISLATIVE_PROPOSITION_RELATIONSHIP_TYPE'), legislativePropositionRelationshipTypesControllers.getLegislativePropositionRelationshipTypes);
@@ -226,17 +227,17 @@ router.get('/publicFiles/file/all', publicFilesControllers.getAllFiles);
 router.get('/publicFiles/file/meta/:fileId', publicFilesControllers.getMetaFile);
 router.get('/publicFiles/file/:fileId', publicFilesControllers.downloadPublicFile);
 router.put('/publicFiles/file/upload/:folderId/:fileName', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.uploadPublicFile);
-router.put('/publicFiles/file', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.newFile);
-router.put('/publicFiles/folder', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.newFolder);
-router.get('/publicFiles/moveFolder/up/:folderId', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.moveFolderUp);
-router.get('/publicFiles/moveFolder/down/:folderId', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.moveFolderDown);
-router.get('/publicFiles/moveFile/up/:fileId', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.moveFileUp);
-router.get('/publicFiles/moveFile/down/:fileId', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.moveFileDown);
+router.put('/publicFiles/file', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.newFile);
+router.put('/publicFiles/folder', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.newFolder);
+router.get('/publicFiles/moveFolder/up/:folderId', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.moveFolderUp);
+router.get('/publicFiles/moveFolder/down/:folderId', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.moveFolderDown);
+router.get('/publicFiles/moveFile/up/:fileId', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.moveFileUp);
+router.get('/publicFiles/moveFile/down/:fileId', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.moveFileDown);
 router.get('/publicFiles/checkUniqueDescription/:folderId', hasRole('READ_PUBLIC_FILES'), publicFilesControllers.checkUniqueDescription);
 router.delete('/publicFiles/file/raw', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.deleteRawFile);
-router.delete('/publicFiles/file/:fileId', hasRole('DELETE_PUBLIC_FILES'), publicFilesControllers.removePublicFile);
-router.delete('/publicFiles/folder/:folderId', hasRole('DELETE_PUBLIC_FILES'), publicFilesControllers.removePublicFolder);
-router.post('/publicFiles/folder', hasRole('WRITE_PUBLIC_FILES'), publicFilesControllers.editFolder);
+router.delete('/publicFiles/file/:fileId', hasRole('DELETE_PUBLIC_FILES'), purgeCache, publicFilesControllers.removePublicFile);
+router.delete('/publicFiles/folder/:folderId', hasRole('DELETE_PUBLIC_FILES'), purgeCache, publicFilesControllers.removePublicFolder);
+router.post('/publicFiles/folder', hasRole('WRITE_PUBLIC_FILES'), purgeCache, publicFilesControllers.editFolder);
 
 //events from Google Calendar API Service
 router.get('/eventsCalendar', eventsCalendarControllers.getEvents);

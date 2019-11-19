@@ -26,7 +26,7 @@ var app = express();
 /*****************************************************************************
 ***************************** APP CONFIG SECTION *****************************
 ******************************************************************************/
-var camaraApiConfig = config.get("CamaraApi")
+var camaraApiConfig = config.get("CamaraApi");
 //log configuration
 winston.setLevels(camaraApiConfig.Log.levels);
 winston.addColors(camaraApiConfig.Log.levelsColors);
