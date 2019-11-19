@@ -14,7 +14,7 @@ module.exports = function(req, res, next) {
          json: true
       }).then(function(data) {
          winston.debug("PURGE CACHE REQUEST OK MESSAGE= [%s]", data.message);
-      }).catch(funtion(error) {
+      }).catch(function(error) {
          winston.debug("PURGE CACHE REQUEST ERROR MESSAGE= [%s]", data.message);
       });
       winston.verbose("PURGE CACHE REQUESTED URL = [%s]", cachePurgeServiceConfig.url);
