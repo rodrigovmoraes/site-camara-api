@@ -4,6 +4,7 @@
 /*****************************************************************************/
 var winston = require('winston');
 var _requestService = require('request-promise');
+var config = require('config');
 var cachePurgeServiceConfig = config.get("CachePurgeService");
 
 module.exports = function(req, res, next) {
