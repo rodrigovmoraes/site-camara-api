@@ -336,7 +336,9 @@ module.exports.removeBanner = function(req, res, next) {
                                     }
                                 });
                });
-               Banner.bulkWrite(commands);
+               if (commands.length) {
+                  Banner.bulkWrite(commands);
+               }
             }
             winston.verbose("Banner removed.");
             Utils.sendJSONresponse(res, 200, { message: 'banner removed' });
