@@ -88,7 +88,7 @@ var _migrate = async function () {
       //*******************Atividades Legislativas********************
       var atividadesLegislativasMenuItem = await migrateMenuPortalItem("Atividades Legislativas", null, true, 2, null, null);
          var materiasLegislativasMenuItem = await migrateMenuPortalItem("Matérias Legislativas", null, false, 0, "link", { "url" : "/materias.html", "target" : "_parent" });
-         var pesquisaAvancadaMateriasLegislativasMenuItem = await migrateMenuPortalItem("Pesquisa Avançada Matérias Legislativas", null, false, 1, "link", { "url" : "http://www.camarasorocaba.sp.gov.br:8383/syslegis/materiaLegislativa/relatorioMateriasAgrupadas", "target" : "_blank" });
+         var pesquisaAvancadaMateriasLegislativasMenuItem = await migrateMenuPortalItem("Pesquisa Avançada Matérias Legislativas", null, false, 1, "link", { "url" : "http://187.51.16.131:8383/syslegis/materiaLegislativa/relatorioMateriasAgrupadas", "target" : "_blank" });
          var pautasSessoesMenuItem = await migrateMenuPortalItem("Pautas das Sessões", null, false, 2, "link", { "url" : "/ordens_do_dia.html", "target" : "_parent" });
          //atas das sessoes
          var atasDasSessoesFolder = migratePublicFiles.getFolder(ATAS_DAS_SESSOES_PUBLIC_FOLDER);
