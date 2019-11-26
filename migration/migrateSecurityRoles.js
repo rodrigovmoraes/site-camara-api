@@ -318,6 +318,11 @@ module.exports.run = async function () {
    securityRoles.name = "VIEW_ALL_PUBLIC_FILES";
    await securityRoles.save();
    module.exports.VIEW_ALL_PUBLIC_FILES = securityRoles;
+   //--
+   securityRoles = new SecurityRole();
+   securityRoles.name = "PURGE_CACHE";
+   await securityRoles.save();
+   module.exports.PURGE_CACHE = securityRoles;
 
    return Promise.resolve(true);
 }

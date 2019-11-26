@@ -37,6 +37,7 @@ var legislativePropositionTypesControllers = require('../controllers/legislative
 var legislativePropositionTagsControllers = require('../controllers/legislativePropositionTags.js');
 var legislativePropositionRelationshipTypesControllers = require('../controllers/legislativePropositionRelationshipTypes.js');
 var publicFilesControllers = require('../controllers/publicFiles.js');
+var purgeCacheControllers = require('../controllers/purgeCache.js');
 
 /*****************************************************************************
 ***************************** CONTROLLERS CONFIG *****************************
@@ -245,5 +246,8 @@ router.get('/eventCalendar', eventsCalendarControllers.getEvent);
 
 //security roles
 router.get('/securityRoles', hasRole('READ_SECURITY_ROLES'), securityRoleControllers.getSecurityRoles);
+
+//cache controllers
+router.get('/purgeCache', hasRole('PURGE_CACHE'), purgeCacheControllers.purgeCache);
 
 module.exports = router;

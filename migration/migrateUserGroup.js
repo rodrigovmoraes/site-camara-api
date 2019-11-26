@@ -157,6 +157,8 @@ module.exports.run = async function () {
    userGroup.roles.push(migrateSecurityRolesScript.DELETE_FIXED_BREAKINGNEWS);
    //--
    userGroup.roles.push(migrateSecurityRolesScript.VIEW_ALL_PUBLIC_FILES);
+   //--
+   userGroup.roles.push(migrateSecurityRolesScript.PURGE_CACHE);
 
    await userGroup.save();
    module.exports.groups[1] = userGroup;

@@ -234,7 +234,15 @@ var _getMenuItemsArr = function() {
                          order: 27,
                          isRoot: true,
                          role: migrateSecurityRolesScript.VIEW_ALL_PUBLIC_FILES
-                      }];
+                      },
+                      {  title: 'Limpeza de Cache',
+                         icon: 'icon-folder-alt',
+                         sref: 'publicFiles.list',
+                         order: 28,
+                         isRoot: true,
+                         role: migrateSecurityRolesScript.PURGE_CACHE
+                      }
+                   ];
       return menuItemsArr;
 }
 
