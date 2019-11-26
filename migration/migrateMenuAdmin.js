@@ -236,8 +236,8 @@ var _getMenuItemsArr = function() {
                          role: migrateSecurityRolesScript.VIEW_ALL_PUBLIC_FILES
                       },
                       {  title: 'Limpeza de Cache',
-                         icon: 'icon-folder-alt',
-                         sref: 'publicFiles.list',
+                         icon: 'icon-energy',
+                         sref: 'purgecache',
                          order: 28,
                          isRoot: true,
                          role: migrateSecurityRolesScript.PURGE_CACHE
