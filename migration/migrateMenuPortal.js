@@ -143,7 +143,7 @@ var _migrate = async function () {
          var tvCamaraMenuItem = await migrateMenuPortalItem("TV Câmara", null, false, 1, "link", { "url" : "/tvlegislativa.html", "target" : "_parent" });
          var radioMenuItem = await migrateMenuPortalItem("Rádio", null, false, 2, "link", { "url" : "/radio.html", "target" : "_parent" });
          var licitacoesMenuItem = await migrateMenuPortalItem("Licitações", null, false, 3, "link", { "url" : "/licitacoes.html", "target" : "_parent" });
-         var concursosMenuItem = await migrateMenuPortalItem("Concursos", null, false, 4, null, null);
+         var concurso012013MenuItem = await migrateMenuPortalItem("Concurso 01/2013", null, false, 0, "link", { "url" : "/page.html?tag=concurso012013", "target" : "_parent" });
          var agendaMenuItem = await migrateMenuPortalItem("Agenda", null, false, 5, "link", { "url" : "/calendar.html", "target" : "_parent" });
          var instagramMenuItem = await migrateMenuPortalItem("Instagram", null, false, 5, "link", { "url" : "https://www.instagram.com/camarasorocaba", "target" : "_blank" });
          var facebookMenuItem = await migrateMenuPortalItem("Facebook", null, false, 6, "link", { "url" : "https://www.facebook.com/camarasorocaba", "target" : "_blank" });
@@ -157,6 +157,8 @@ var _migrate = async function () {
          informacaoMenuItem.menuItems.push(radioMenuItem);
          informacaoMenuItem.menuItems.push(licitacoesMenuItem);
          informacaoMenuItem.menuItems.push(concursosMenuItem);
+         informacaoMenuItem.menuItems.push(concursosMenuItem);
+         informacaoMenuItem.menuItems.push(concurso012013MenuItem);
          informacaoMenuItem.menuItems.push(agendaMenuItem);
          informacaoMenuItem.menuItems.push(instagramMenuItem);
          informacaoMenuItem.menuItems.push(facebookMenuItem);
@@ -166,20 +168,10 @@ var _migrate = async function () {
          informacaoMenuItem.menuItems.push(escolaLegislativoMenuItem);
          await informacaoMenuItem.save();
 
-         var concurso012013MenuItem = await migrateMenuPortalItem("Concurso 1/2013", null, false, 0, "link", { "url" : "/page.html?tag=concurso012013", "target" : "_parent" });
-         concursosMenuItem.menuItems.push(concurso012013MenuItem);
-         await concursosMenuItem.save();
       //****************************Finanças********************
       var financasMenuItem =  await migrateMenuPortalItem("Finanças", null, true, 5, null, null);
-         var contasPublicasMenuItem = await migrateMenuPortalItem("Contas Públicas", null, false, 0, null, null);
          var portalTransparenciaMenuItem = await migrateMenuPortalItem("Portal da Transparência", null, false, 1, "link", { "url" : "http://sorocaba.camara.sp.etransparencia.com.br/", "target" : "_blank" });
          var vencimentoServidoresMenuItem = await migrateMenuPortalItem("Vencimento Servidores", null, false, 2, "link", { "url" : "http://leideacesso.etransparencia.com.br/sorocaba.camara.sp/Portal/dash.html?2,139,96", "target" : "_blank" });
-
-         financasMenuItem.menuItems.push(contasPublicasMenuItem);
-         financasMenuItem.menuItems.push(portalTransparenciaMenuItem);
-         financasMenuItem.menuItems.push(vencimentoServidoresMenuItem);
-
-         await financasMenuItem.save();
 
          //contas públicas items
          //LEI_RESPONSABILIDADE_FISCAL_FOLDER
@@ -223,13 +215,15 @@ var _migrate = async function () {
             valorSubsidioRemuneracaoCargosEtcMenuItem = await migrateMenuPortalItem("Valor de Subsídio e Remuneração de Cargos e Empregos Públicos", null, false, 4, "link", { "url" : "/arquivos_publicos.html", "target" : "_parent" });
          }
 
-         contasPublicasMenuItem.menuItems.push(leiDeResponsabilidadeFiscalMenuItem);
-         contasPublicasMenuItem.menuItems.push(leiFederal975598MenuItem);
-         contasPublicasMenuItem.menuItems.push(salarioServidoresMenuItem);
-         contasPublicasMenuItem.menuItems.push(prestacaoContasMenuItem);
-         contasPublicasMenuItem.menuItems.push(valorSubsidioRemuneracaoCargosEtcMenuItem);
+         financasMenuItem.menuItems.push(leiDeResponsabilidadeFiscalMenuItem);
+         financasMenuItem.menuItems.push(leiFederal975598MenuItem);
+         financasMenuItem.menuItems.push(salarioServidoresMenuItem);
+         financasMenuItem.menuItems.push(prestacaoContasMenuItem);
+         financasMenuItem.menuItems.push(valorSubsidioRemuneracaoCargosEtcMenuItem);
+         financasMenuItem.menuItems.push(portalTransparenciaMenuItem);
+         financasMenuItem.menuItems.push(vencimentoServidoresMenuItem);
 
-         await contasPublicasMenuItem.save();
+         await financasMenuItem.save();
       return Promise.resolve(true);
    } catch(error) {
       console.log("Error while migrating menu portal items, err = [" + error + "].");
