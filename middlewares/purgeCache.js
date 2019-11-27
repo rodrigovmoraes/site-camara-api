@@ -17,12 +17,13 @@ module.exports = function(req, res, next) {
       }).then(function(data) {
          winston.debug("PURGE CACHE REQUEST OK MESSAGE= [%s]", data.message);
          if (cachePurgeServiceConfig.refreshEnable) {
-            winston.debug("REFRESH CACHE REQUESTED URL = [%s]", cachePurgeServiceConfig.refreshUrl);
-            return _requestService({
-               'url': cachePurgeServiceConfig.refreshUrl,
-               method: "GET",
-               json: true
-            });
+            setTimeout(function() {
+               winston.debug("REFRESH CACHE REQUESTED URL = [%s]", cachePurgeServiceConfig.refreshUrl);
+               return _requestService({
+                  'url': cachePurgeServiceConfig.refreshUrl,
+                  method: "GET"
+               });
+            }, cachePurgeServiceConfig.refreshDelay);
          }
       }).catch(function(error) {
          winston.debug("PURGE CACHE REQUEST ERROR MESSAGE= [%s]", error.message);
