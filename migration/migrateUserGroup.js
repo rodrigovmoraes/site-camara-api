@@ -159,6 +159,8 @@ module.exports.run = async function () {
    userGroup.roles.push(migrateSecurityRolesScript.VIEW_ALL_PUBLIC_FILES);
    //--
    userGroup.roles.push(migrateSecurityRolesScript.PURGE_CACHE);
+   //--
+   userGroup.roles.push(migrateSecurityRolesScript.WRITE_EVENTS);
 
    await userGroup.save();
    module.exports.groups[1] = userGroup;
