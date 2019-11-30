@@ -156,8 +156,6 @@ var _migrate = async function () {
          informacaoMenuItem.menuItems.push(tvCamaraMenuItem);
          informacaoMenuItem.menuItems.push(radioMenuItem);
          informacaoMenuItem.menuItems.push(licitacoesMenuItem);
-         informacaoMenuItem.menuItems.push(concursosMenuItem);
-         informacaoMenuItem.menuItems.push(concursosMenuItem);
          informacaoMenuItem.menuItems.push(concurso012013MenuItem);
          informacaoMenuItem.menuItems.push(agendaMenuItem);
          informacaoMenuItem.menuItems.push(instagramMenuItem);
