@@ -117,6 +117,7 @@ DbModule.connect(async function(mongoose, connection) {
    //*****************************************************************************
    var createUser = require('./createUser');
 
+   var migrateSecurityRoles = require('./migrateSecurityRoles');
    var migrateLegislativePropositions = require('./migrateLegislativePropositions');
    var migratePublicFiles = require('./migratePublicFiles');
    var migratePrestaContas = require('./migratePrestaContas');
@@ -156,6 +157,10 @@ DbModule.connect(async function(mongoose, connection) {
    PublicFolder.getModel().collection.drop();
 
    await createUser.run();
+
+   //security roles
+   //don't drop secure roles, but load them
+   await migrateSecurityRoles.run();
 
    await migratePublicFiles.run();
    await migratePrestaContas.run();
