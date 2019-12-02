@@ -20,7 +20,7 @@ module.exports.run = async function () {
    winston.info("************migrateSecurityRoles");
 
    //users roles
-   var securityRoles = await SecurityRole.find({name: 'READ_USER'});
+   var securityRoles = await SecurityRole.findOne({name: 'READ_USER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_USER";
@@ -28,7 +28,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_USER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_USER'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_USER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_USER";
@@ -37,7 +37,7 @@ module.exports.run = async function () {
    module.exports.WRITE_USER = securityRoles;
 
    //user group roles
-   securityRoles = await SecurityRole.find({name: 'READ_USER_GROUP'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_USER_GROUP'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_USER_GROUP";
@@ -45,7 +45,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_USER_GROUP = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_USER_GROUP'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_USER_GROUP'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_USER_GROUP";
@@ -53,7 +53,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_USER_GROUP = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_USER_GROUP'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_USER_GROUP'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_USER_GROUP";
@@ -62,7 +62,7 @@ module.exports.run = async function () {
    module.exports.DELETE_USER_GROUP = securityRoles;
 
    //menu admin roles
-   securityRoles = await SecurityRole.find({name: 'READ_MENU_ADMIN'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_MENU_ADMIN'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_MENU_ADMIN";
@@ -70,7 +70,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_MENU_ADMIN = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_MENU_ADMIN'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_MENU_ADMIN'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_MENU_ADMIN";
@@ -78,7 +78,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_MENU_ADMIN = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_MENU_ADMIN'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_MENU_ADMIN'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_MENU_ADMIN";
@@ -87,7 +87,7 @@ module.exports.run = async function () {
    module.exports.DELETE_MENU_ADMIN = securityRoles;
 
    //menu portal roles
-   securityRoles = await SecurityRole.find({name: 'WRITE_MENU_PORTAL'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_MENU_PORTAL'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_MENU_PORTAL";
@@ -95,7 +95,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_MENU_PORTAL = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_MENU_PORTAL'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_MENU_PORTAL'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_MENU_PORTAL";
@@ -104,7 +104,7 @@ module.exports.run = async function () {
    module.exports.DELETE_MENU_PORTAL = securityRoles;
 
    //news roles
-   securityRoles = await SecurityRole.find({name: 'WRITE_NEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_NEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_NEWS";
@@ -112,7 +112,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_NEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_NEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_NEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_NEWS";
@@ -121,7 +121,7 @@ module.exports.run = async function () {
    module.exports.DELETE_NEWS = securityRoles;
 
    //page roles
-   securityRoles = await SecurityRole.find({name: 'READ_PAGE'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_PAGE'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_PAGE";
@@ -129,7 +129,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_PAGE = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_PAGE'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_PAGE'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_PAGE";
@@ -137,7 +137,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_PAGE = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_PAGE'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_PAGE'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_PAGE";
@@ -146,7 +146,7 @@ module.exports.run = async function () {
    module.exports.DELETE_PAGE = securityRoles;
 
    //banner roles
-   securityRoles = await SecurityRole.find({name: 'READ_BANNER'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_BANNER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_BANNER";
@@ -154,7 +154,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_BANNER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_BANNER'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_BANNER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_BANNER";
@@ -162,7 +162,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_BANNER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_BANNER'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_BANNER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_BANNER";
@@ -171,7 +171,7 @@ module.exports.run = async function () {
    module.exports.DELETE_BANNER = securityRoles;
 
    //hotnews roles
-   securityRoles = await SecurityRole.find({name: 'READ_HOTNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_HOTNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_HOTNEWS";
@@ -179,7 +179,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_HOTNEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_HOTNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_HOTNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_HOTNEWS";
@@ -187,7 +187,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_HOTNEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_HOTNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_HOTNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_HOTNEWS";
@@ -197,7 +197,7 @@ module.exports.run = async function () {
 
 
    //breaking news roles
-   securityRoles = await SecurityRole.find({name: 'READ_BREAKINGNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_BREAKINGNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_BREAKINGNEWS";
@@ -205,7 +205,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_BREAKINGNEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_BREAKINGNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_BREAKINGNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_BREAKINGNEWS";
@@ -213,7 +213,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_BREAKINGNEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_BREAKINGNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_BREAKINGNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_BREAKINGNEWS";
@@ -222,7 +222,7 @@ module.exports.run = async function () {
    module.exports.DELETE_BREAKINGNEWS = securityRoles;
 
    //fixed breaking news roles
-   securityRoles = await SecurityRole.find({name: 'READ_FIXED_BREAKINGNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_FIXED_BREAKINGNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_FIXED_BREAKINGNEWS";
@@ -230,7 +230,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_FIXED_BREAKINGNEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_FIXED_BREAKINGNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_FIXED_BREAKINGNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_FIXED_BREAKINGNEWS";
@@ -238,7 +238,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_FIXED_BREAKINGNEWS = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_FIXED_BREAKINGNEWS'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_FIXED_BREAKINGNEWS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_FIXED_BREAKINGNEWS";
@@ -247,7 +247,7 @@ module.exports.run = async function () {
    module.exports.DELETE_FIXED_BREAKINGNEWS = securityRoles;
 
    //events roles
-   securityRoles = await SecurityRole.find({name: 'WRITE_EVENTS'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_EVENTS'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_EVENTS";
@@ -256,7 +256,7 @@ module.exports.run = async function () {
    module.exports.WRITE_EVENTS = securityRoles;
 
    //licitacao roles
-   securityRoles = await SecurityRole.find({name: 'READ_LICITACAO'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_LICITACAO'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_LICITACAO";
@@ -264,7 +264,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_LICITACAO = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_LICITACAO'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_LICITACAO'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_LICITACAO";
@@ -272,7 +272,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_LICITACAO = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_LICITACAO'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_LICITACAO'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_LICITACAO";
@@ -281,7 +281,7 @@ module.exports.run = async function () {
    module.exports.DELETE_LICITACAO = securityRoles;
 
    //legislative proposition roles
-   securityRoles = await SecurityRole.find({name: 'READ_LEGISLATIVE_PROPOSITION'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_LEGISLATIVE_PROPOSITION'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_LEGISLATIVE_PROPOSITION";
@@ -289,7 +289,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_LEGISLATIVE_PROPOSITION = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_LEGISLATIVE_PROPOSITION'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_LEGISLATIVE_PROPOSITION'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_LEGISLATIVE_PROPOSITION";
@@ -297,7 +297,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_LEGISLATIVE_PROPOSITION = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_LEGISLATIVE_PROPOSITION'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_LEGISLATIVE_PROPOSITION'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_LEGISLATIVE_PROPOSITION";
@@ -306,7 +306,7 @@ module.exports.run = async function () {
    module.exports.DELETE_LEGISLATIVE_PROPOSITION = securityRoles;
 
    //legislative proposition tag
-   securityRoles = await SecurityRole.find({name: 'READ_LEGISLATIVE_PROPOSITION_TAG'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_LEGISLATIVE_PROPOSITION_TAG'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_LEGISLATIVE_PROPOSITION_TAG";
@@ -314,7 +314,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_LEGISLATIVE_PROPOSITION_TAG = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_LEGISLATIVE_PROPOSITION_TAG'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_LEGISLATIVE_PROPOSITION_TAG'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_LEGISLATIVE_PROPOSITION_TAG";
@@ -322,7 +322,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_LEGISLATIVE_PROPOSITION_TAG = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_LEGISLATIVE_PROPOSITION_TAG'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_LEGISLATIVE_PROPOSITION_TAG'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_LEGISLATIVE_PROPOSITION_TAG";
@@ -331,7 +331,7 @@ module.exports.run = async function () {
    module.exports.DELETE_LEGISLATIVE_PROPOSITION_TAG = securityRoles;
 
    //legislative proposition relationship type
-   securityRoles = await SecurityRole.find({name: 'READ_LEGISLATIVE_PROPOSITION_RELATIONSHIP_TYPE'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_LEGISLATIVE_PROPOSITION_RELATIONSHIP_TYPE'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_LEGISLATIVE_PROPOSITION_RELATIONSHIP_TYPE";
@@ -340,7 +340,7 @@ module.exports.run = async function () {
    module.exports.READ_LEGISLATIVE_PROPOSITION_RELATIONSHIP_TYPE = securityRoles;
 
    //public files
-   securityRoles = await SecurityRole.find({name: 'READ_PUBLIC_FILES'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_PUBLIC_FILES'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_PUBLIC_FILES";
@@ -348,7 +348,7 @@ module.exports.run = async function () {
    }
    module.exports.READ_PUBLIC_FILES = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'WRITE_PUBLIC_FILES'});
+   securityRoles = await SecurityRole.findOne({name: 'WRITE_PUBLIC_FILES'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "WRITE_PUBLIC_FILES";
@@ -356,7 +356,7 @@ module.exports.run = async function () {
    }
    module.exports.WRITE_PUBLIC_FILES = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'DELETE_PUBLIC_FILES'});
+   securityRoles = await SecurityRole.findOne({name: 'DELETE_PUBLIC_FILES'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "DELETE_PUBLIC_FILES";
@@ -365,7 +365,7 @@ module.exports.run = async function () {
    module.exports.DELETE_PUBLIC_FILES = securityRoles;
 
    //security roles roles
-   securityRoles = await SecurityRole.find({name: 'READ_SECURITY_ROLES'});
+   securityRoles = await SecurityRole.findOne({name: 'READ_SECURITY_ROLES'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "READ_SECURITY_ROLES";
@@ -374,7 +374,7 @@ module.exports.run = async function () {
    module.exports.READ_SECURITY_ROLES = securityRoles;
 
    //manage search index role
-   securityRoles = await SecurityRole.find({name: 'MANAGE_SEARCH_INDEX'});
+   securityRoles = await SecurityRole.findOne({name: 'MANAGE_SEARCH_INDEX'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "MANAGE_SEARCH_INDEX";
@@ -383,7 +383,7 @@ module.exports.run = async function () {
    module.exports.MANAGE_SEARCH_INDEX = securityRoles;
 
    //public files roles
-   securityRoles = await SecurityRole.find({name: 'VIEW_ATAS_DAS_SESSOES_PUBLIC_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_ATAS_DAS_SESSOES_PUBLIC_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_ATAS_DAS_SESSOES_PUBLIC_FOLDER";
@@ -391,7 +391,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_ATAS_DAS_SESSOES_PUBLIC_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_REQUERIMENTOS_VERBAIS_PUBLIC_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_REQUERIMENTOS_VERBAIS_PUBLIC_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_REQUERIMENTOS_VERBAIS_PUBLIC_FOLDER";
@@ -399,7 +399,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_REQUERIMENTOS_VERBAIS_PUBLIC_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_LEI_RESPONSABILIDADE_FISCAL_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_LEI_RESPONSABILIDADE_FISCAL_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_LEI_RESPONSABILIDADE_FISCAL_FOLDER";
@@ -407,7 +407,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_LEI_RESPONSABILIDADE_FISCAL_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_LEI_FEDERAL_9755_98_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_LEI_FEDERAL_9755_98_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_LEI_FEDERAL_9755_98_FOLDER";
@@ -415,7 +415,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_LEI_FEDERAL_9755_98_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_SALARIO_SERVIDORES_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_SALARIO_SERVIDORES_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_SALARIO_SERVIDORES_FOLDER";
@@ -423,7 +423,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_SALARIO_SERVIDORES_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_PRESTACAO_CONTAS_ANUAL_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_PRESTACAO_CONTAS_ANUAL_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_PRESTACAO_CONTAS_ANUAL_FOLDER";
@@ -431,7 +431,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_PRESTACAO_CONTAS_ANUAL_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_VALOR_SUBSIDIO_REMUNERACAO_CARGOS_ETC_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_VALOR_SUBSIDIO_REMUNERACAO_CARGOS_ETC_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_VALOR_SUBSIDIO_REMUNERACAO_CARGOS_ETC_FOLDER";
@@ -439,7 +439,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_VALOR_SUBSIDIO_REMUNERACAO_CARGOS_ETC_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_ESTRUTURA_ADM_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_ESTRUTURA_ADM_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_ESTRUTURA_ADM_FOLDER";
@@ -447,7 +447,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_ESTRUTURA_ADM_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_LISTA_PRESENCA_VEREADORES_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_LISTA_PRESENCA_VEREADORES_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_LISTA_PRESENCA_VEREADORES_FOLDER";
@@ -455,7 +455,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_LISTA_PRESENCA_VEREADORES_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_PROGRAMA_BAIRRO_EM_BAIRRO_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_PROGRAMA_BAIRRO_EM_BAIRRO_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_PROGRAMA_BAIRRO_EM_BAIRRO_FOLDER";
@@ -463,7 +463,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_PROGRAMA_BAIRRO_EM_BAIRRO_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_ESCOLA_DO_LEGISLATIVO_FOLDER'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_ESCOLA_DO_LEGISLATIVO_FOLDER'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_ESCOLA_DO_LEGISLATIVO_FOLDER";
@@ -471,7 +471,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_ESCOLA_DO_LEGISLATIVO_FOLDER = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_PRESTACAO_CONTAS_VEREADORES'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_PRESTACAO_CONTAS_VEREADORES'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_PRESTACAO_CONTAS_VEREADORES";
@@ -479,7 +479,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_PRESTACAO_CONTAS_VEREADORES = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'VIEW_ALL_PUBLIC_FILES'});
+   securityRoles = await SecurityRole.findOne({name: 'VIEW_ALL_PUBLIC_FILES'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "VIEW_ALL_PUBLIC_FILES";
@@ -487,7 +487,7 @@ module.exports.run = async function () {
    }
    module.exports.VIEW_ALL_PUBLIC_FILES = securityRoles;
    //--
-   securityRoles = await SecurityRole.find({name: 'PURGE_CACHE'});
+   securityRoles = await SecurityRole.findOne({name: 'PURGE_CACHE'});
    if (!securityRoles) {
       securityRoles = new SecurityRole();
       securityRoles.name = "PURGE_CACHE";
