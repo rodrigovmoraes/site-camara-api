@@ -26,7 +26,7 @@ module.exports = function(req, res, next) {
             }, cachePurgeServiceConfig.refreshDelay);
          }
       }).catch(function(error) {
-         winston.debug("PURGE CACHE REQUEST ERROR MESSAGE= [%s]", error.message);
+         winston.error("PURGE CACHE REQUEST ERROR MESSAGE= [%s]", error.message);
       });
    }
    next();

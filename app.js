@@ -61,6 +61,7 @@ var LegislativePropositionType = require('./models/LegislativePropositionType.js
 var LegislativePropositionRemoved = require('./models/LegislativePropositionRemoved.js');
 var PublicFile = require('./models/PublicFile.js');
 var PublicFolder = require('./models/PublicFolder.js');
+var RefresherServiceSchedule = require('./services/RefresherServiceSchedule.js');
 
 DbModule.setDbURI(camaraApiConfig.Models.Db.dbURI);
 DbModule.useMock(camaraApiConfig.Models.Db.useMock);
@@ -158,6 +159,9 @@ app.use(fileUpload({
 // portal routes
 var portalRoutes = require('./routes/index.js')
 app.use('/', portalRoutes);
+
+//schedule portal home page refresh in order to refresh the portal cache
+RefresherServiceSchedule.scheduleAllRefresherTasks();
 
 /*****************************************************************************
 ************************** ERROR HANDLING SECTION ****************************
