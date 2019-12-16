@@ -61,7 +61,7 @@ var _createModelSchema = function(mongoose) {
    };
 
    userSchema.methods.generateJwt = function () {
-     function encodePayload = function(payload) {
+     function encodePayload (payload) {
             return encodeURIComponent(payload).replace(/%([0-9A-F]{2})/g,
                  function toSolidBytes(match, p1) {
                      return String.fromCharCode('0x' + p1);
