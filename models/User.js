@@ -61,20 +61,15 @@ var _createModelSchema = function(mongoose) {
    };
 
    userSchema.methods.generateJwt = function () {
-     function encodePayload (payload) {
-            return encodeURIComponent(payload);
-     }
-
      var expiry = new Date();
      expiry.setTime(expiry.getTime() + _expireInSeconds * 1000);
-     var obj = JSON.stringify({
-       _id: this._id,
-       email: this.email,
-       name: this.name,
-       exp: parseInt(expiry.getTime() / 1000),
-    });
 
-     return jwt.sign(encodePayload(obj), process.env.JWT_SECRET); // DO NOT KEEP YOUR SECRET IN THE CODE!
+     return jwt.sign({
+       _id: this._id,
+       email: encodeURIComponent(this.email),
+       name: encodeURIComponent(this.name),
+       exp: parseInt(expiry.getTime() / 1000),
+     }, process.env.JWT_SECRET); // DO NOT KEEP YOUR SECRET IN THE CODE!
    };
 
    userSchema.methods.getAllRoles = function () {
