@@ -19,12 +19,24 @@ module.exports.getMenuPortalTree = async function() {
    return MenuPortal.find({ isRoot: true })
             .sort("order")
             .then(async function(rootMenuItems) {
-      if(rootMenuItems) {
+      if (rootMenuItems) {
+         var rootMenuItemsJson = [];
+         var rootMenuItemJson = null;
          var i;
+         //store the leaf items of each root menu item
+         var leafMenuItemsMap = {};
+
          for(i = 0; i < rootMenuItems.length; i++) {
             var rootMenuItem = rootMenuItems[i];
             var availableNodes = [];
             availableNodes.push(rootMenuItem);
+            if (rootMenuItem) {
+               //initialize the array that will store the
+               //leaf items of this root item
+               //leafs menu items is used to display a hierarchy with maximum depth of two
+               //this is util for devices that not support multi level menu
+               leafMenuItemsMap[rootMenuItem.id] = [];
+            }
 
             //while it has nodes to be visited
             while(availableNodes.length > 0) {
@@ -54,14 +66,24 @@ module.exports.getMenuPortalTree = async function() {
                   currentNode.menuItems = nodeChildren;
                   //put the children of the node in the list of nodes
                   //to be visited
-                  currentNode.menuItems.forEach(function(child) {
-                     availableNodes.push(child);
-                  });
+                  for(j = currentNode.menuItems.length - 1; j >= 0; j--) {
+                     availableNodes.push(currentNode.menuItems[j]);
+                  }
+               } else {
+                  //store the leaf item of the root item
+                  leafMenuItemsMap[rootMenuItem.id].push(currentNode);
                }
             }
          }
-
-         return rootMenuItems;
+         for (i = 0; i < rootMenuItems.length; i++) {
+            rootMenuItemJson = rootMenuItems[i].toJSON();
+            //build the leaf menu items
+            //leafs menu items is used to display a hierarchy with maximum depth of two
+            //this is util for devices that not support multi level menu
+            rootMenuItemJson.leafMenuItems = leafMenuItemsMap[rootMenuItems[i].id];
+            rootMenuItemsJson.push(rootMenuItemJson);
+         }
+         return rootMenuItemsJson;
       } else {
          return {}; //nothing found in the database
       }
