@@ -153,8 +153,10 @@ var _migrate = async function(connection, newsItems) {
             newsItem.thumbnailFile = thumbnailFile;
             newsItem.creationDate = new Date();
             newsItem.changedDate = null;
+            //set font-size to 18px
+            newsItems[k].txt_noticia = newsItems[k].txt_noticia ? newsItems[k].txt_noticia.replace(/font\-size\:[\s0-9\.a-z]*\;/g, "font-size: 18px;" : "");
             if (hasThumbnail) {
-               newsItem.body = "<div><img src=\"" + thumbnailUrl + "\" style=\"margin: 30px 0px 10px 10px;\" width=\"200\" height=\"129\" align=\"right\"></div>" + newsItems[k].txt_noticia;
+               newsItem.body = "<div><img src=\"" + thumbnailUrl + "\" style=\"margin: 30px 0px 10px 10px;\" width=\"200\" height=\"129\" align=\"right\" class=\"fr-dii fr-fir\"></div>" + newsItems[k].txt_noticia;
             } else {
                newsItem.body = newsItems[k].txt_noticia;
             }
