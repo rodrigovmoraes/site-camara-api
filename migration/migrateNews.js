@@ -31,7 +31,7 @@ var queryGetNews  = "SELECT n.cod_noticia as cod_noticia, " +
                     "       n.str_foto as str_foto, " +
                     "       txt_chamada as txt_chamada " +             
                     "FROM   tb_noticia n " +
-                    "WHERE  YEAR(dat_noticia) >= 2017 ";
+                    "WHERE  YEAR(dat_noticia) >= 2019 ";
 /*****************************************************************************/
 var _getContentType = function(extension) {
    if (extension) {
@@ -155,7 +155,7 @@ var _migrate = async function(connection, newsItems) {
             newsItem.creationDate = new Date();
             newsItem.changedDate = null;
             //set font-size to 18px
-            newsItems[k].txt_noticia = newsItems[k].txt_noticia ? newsItems[k].txt_noticia.replace(/font\-size\:[\s0-9\.a-z]*\;/g, "font-size: 18px;" : "");
+            newsItems[k].txt_noticia = newsItems[k].txt_noticia ? newsItems[k].txt_noticia.replace(/font\-size\:[\s0-9\.a-z]*\;/g, "font-size: 18px;") : "";
             if (hasThumbnail) {
                newsItem.body = "<div><img src=\"" + thumbnailUrl + "\" style=\"margin: 30px 0px 10px 10px;\" width=\"200\" height=\"129\" align=\"right\" class=\"fr-dii fr-fir\"></div>" + newsItems[k].txt_noticia;
             } else {
