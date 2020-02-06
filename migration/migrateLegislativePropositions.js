@@ -3,8 +3,8 @@
 ******************************* (LIBS MODULES) *******************************
 ******************************************************************************/
 var urlDownloadLegislativePropositionFileAttachment = "http://www.camarasorocaba.sp.gov.br/sitecamara/proposituras/downloadanexo?codigo_arquivo=";
-var urlLegislativeProposition = "http://localhost:3001/propositura.html?id=";
-var urlMateriasLegislativasService = "http://localhost:3003/materiasLegislativas";
+var urlLegislativeProposition = "http://novo.camarasorocaba.sp.gov.br/propositura.html?id=";
+var urlMateriasLegislativasService = "http://localhost:3103/materiasLegislativas";
 
 var config = require('config');
 var winston = require('winston');

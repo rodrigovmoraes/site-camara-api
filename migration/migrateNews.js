@@ -29,8 +29,9 @@ var queryGetNews  = "SELECT n.cod_noticia as cod_noticia, " +
                     "       n.dat_noticia as dat_noticia, " +
                     "       n.txt_noticia as txt_noticia, " +
                     "       n.str_foto as str_foto, " +
-                    "       txt_chamada as txt_chamada " +
-                    "FROM   tb_noticia n; ";
+                    "       txt_chamada as txt_chamada " +             
+                    "FROM   tb_noticia n " +
+                    "WHERE  YEAR(dat_noticia) >= 2017 ";
 /*****************************************************************************/
 var _getContentType = function(extension) {
    if (extension) {

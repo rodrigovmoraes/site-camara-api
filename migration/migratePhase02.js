@@ -128,48 +128,48 @@ DbModule.connect(async function(mongoose, connection) {
 
    var s3BucketCleanAndCreate = require('./s3BucketCleanAndCreate');
 
-   await s3BucketCleanAndCreate.cleanS3Folder('/legislative_proposition');
+   //await s3BucketCleanAndCreate.cleanS3Folder('/legislative_proposition');
    await s3BucketCleanAndCreate.cleanS3Folder('/news');
-   await s3BucketCleanAndCreate.cleanS3Folder('/public_files');
-   await s3BucketCleanAndCreate.cleanS3Folder('/licitacoes_events');
+   //await s3BucketCleanAndCreate.cleanS3Folder('/public_files');
+   //await s3BucketCleanAndCreate.cleanS3Folder('/licitacoes_events');
 
    //news
    NewsItemModule.getModel().collection.drop();
 
    //licitacoes
-   LicitacaoEventModule.getModel().collection.drop();
-   LicitacaoModule.getModel().collection.drop();
-   LicitacaoCategoryModule.getModel().collection.drop();
+   //LicitacaoEventModule.getModel().collection.drop();
+   //LicitacaoModule.getModel().collection.drop();
+   //LicitacaoCategoryModule.getModel().collection.drop();
 
    //legislative proposition
-   LegislativePropositionFileAttachment.getModel().collection.drop();
-   LegislativeProposition.getModel().collection.drop();
-   LegislativePropositionRelationshipType.getModel().collection.drop();
-   LegislativePropositionTag.getModel().collection.drop();
-   LegislativePropositionType.getModel().collection.drop();
+   //LegislativePropositionFileAttachment.getModel().collection.drop();
+   //LegislativeProposition.getModel().collection.drop();
+   //LegislativePropositionRelationshipType.getModel().collection.drop();
+   //LegislativePropositionTag.getModel().collection.drop();
+   //LegislativePropositionType.getModel().collection.drop();
 
    //menus
-   MenuPortalModule.getModel().collection.drop();
-   MenuAdminModule.getModel().collection.drop();;
+   //MenuPortalModule.getModel().collection.drop();
+   //MenuAdminModule.getModel().collection.drop();;
 
    //public files
-   PublicFile.getModel().collection.drop();
-   PublicFolder.getModel().collection.drop();
+   //PublicFile.getModel().collection.drop();
+   //PublicFolder.getModel().collection.drop();
 
    await createUser.run();
 
    //security roles
    //don't drop secure roles, but load them
-   await migrateSecurityRoles.run();
+   //await migrateSecurityRoles.run();
 
-   await migratePublicFiles.run();
-   await migratePrestaContas.run();
-   await migrateLegislativePropositions.run();
+   //await migratePublicFiles.run();
+   //await migratePrestaContas.run();
+   //await migrateLegislativePropositions.run();
    await migrateNews.run();
-   await migrateLicitacoes.run();
+   //await migrateLicitacoes.run();
 
-   await migrateMenuAdmin.run();
-   await migrateMenuPortal.run();
+   //await migrateMenuAdmin.run();
+   //await migrateMenuPortal.run();
 
    //close mongodb connection
    DbModule.close();
