@@ -197,16 +197,33 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    var keywordsWords = [];
    var keywordsRegex;
    var k;
+   var keywordsFilter = {};
+   var keywordsFilterClauses = [];
+   var keywordsDescriptionFieldFilter = {};
+   var keywordsTextFieldFilter = {};
+   var keywordsDescriptionFieldFilterClauses = [];
+   var keywordsTextFieldFilterClauses = [];
 
    filter['$and'] = filterAnd;
 
    if (keywords) {
       keywordsWords = _.words(keywords);
-      if (keywordsWords) {
+      if (keywordsWords && keywordsWords.length > 0) {
+         keywordsDescriptionFieldFilter['$and'] = keywordsDescriptionFieldFilterClauses;
+         keywordsTextFieldFilter['$and'] = keywordsTextFieldFilterClauses;
+         keywordsFilter['$or'] = keywordsFilterClauses;
+         keywordsFilterClauses.push(keywordsDescriptionFieldFilter);
+         keywordsFilterClauses.push(keywordsTextFieldFilter);
          for (k = 0; k < keywordsWords.length; k++) {
             keywordsRegex = new RegExp(keywordsWords[k], "i");
-            filterAnd.push({ description : { $regex : keywordsRegex } });
+            keywordsDescriptionFieldFilterClauses.push({ description : { $regex : keywordsRegex } });
          }
+         for (k = 0; k < keywordsWords.length; k++) {
+            keywordsRegex = new RegExp(keywordsWords[k], "i");
+            keywordsTextFieldFilterClauses.push({ text : { $regex : keywordsRegex } });
+         }
+
+         filterAnd.push(keywordsFilter);
       }
    }
    if(number && number > 0) {
