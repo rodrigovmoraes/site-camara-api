@@ -22,14 +22,16 @@ var _refresh = async function() {
    winston.verbose("REFRESH CACHE REQUESTED BY SCHEDULE, URL = [%s]", cachePurgeServiceConfig.refreshUrl);
    return _requestService({
       'url': cachePurgeServiceConfig.refreshUrl,
-      method: "GET"
+      method: "GET",
+      headers: {
+        'Purge-Content': '1'
+      }
    }).then(async function(result) {
       winston.verbose("REFRESH CACHE REQUEST OK");
    }).catch(function(error) {
       winston.error("REFRESH CACHE REQUEST ERROR MESSAGE= [%s]", error.message);
    });
 }
-
 
 module.exports.scheduleAllRefresherTasks = function() {
    var schedule = _getRefreshTasks();
