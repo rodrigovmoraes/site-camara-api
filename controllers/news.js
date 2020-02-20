@@ -329,44 +329,14 @@ module.exports.getNews = function(req, res, next) {
    //filter options
    var filter = { };
    var filterAnd = [];
+   var sortOptions = { publish: 1, publicationDate: -1, creationDate: -1, changedDate: -1 };
    filter['$and'] = filterAnd;
-   var keywordsFilter = {};
-   var keywordsFilterClauses = [];
-   var keywordsTitleFieldFilter = {};
-   var keywordsHeadlineFieldFilter = {};
-   var keywordsBodyFieldFilter = {};
-   var keywordsTitleFieldFilterClauses = [];
-   var keywordsHeadlineFieldFilterClauses = [];
-   var keywordsBodyFieldFilterClauses = [];
 
    var keywordsWords = [];
    var k;
 
    if (keywords) {
-      keywordsWords = _.words(keywords);
-      if (keywordsWords && keywordsWords.length > 0) {
-         keywordsTitleFieldFilter['$and'] = keywordsTitleFieldFilterClauses;
-         keywordsHeadlineFieldFilter['$and'] = keywordsHeadlineFieldFilterClauses;
-         keywordsBodyFieldFilter['$and'] = keywordsBodyFieldFilterClauses;
-         keywordsFilter['$or'] = keywordsFilterClauses;
-         keywordsFilterClauses.push(keywordsTitleFieldFilter);
-         keywordsFilterClauses.push(keywordsHeadlineFieldFilter);
-         keywordsFilterClauses.push(keywordsBodyFieldFilter);
-         //limit keywords amount to 20
-         for (k = 0; k < keywordsWords.length && k < 20; k++) {
-            keywordsRegex = new RegExp(keywordsWords[k], "i");
-            keywordsTitleFieldFilterClauses.push({ title : { $regex : keywordsRegex } });
-         }
-         for (k = 0; k < keywordsWords.length && k < 20; k++) {
-            keywordsRegex = new RegExp(keywordsWords[k], "i");
-            keywordsHeadlineFieldFilterClauses.push({ headline : { $regex : keywordsRegex } });
-         }
-         for (k = 0; k < keywordsWords.length && k < 20; k++) {
-            keywordsRegex = new RegExp(keywordsWords[k], "i");
-            keywordsBodyFieldFilterClauses.push({ body : { $regex : keywordsRegex } });
-         }
-         filterAnd.push(keywordsFilter);
-      }
+      filterAnd.push({ '$text': { '$search' : "\"" + keywords + "\"" } });
    }
 
    if(date1) {
@@ -404,14 +374,17 @@ module.exports.getNews = function(req, res, next) {
    if(req.query.id) {
       filter = { _id : NewsItemModule.getMongoose().Types.ObjectId(req.query.id) }
    }
-
+   //set sort by text search score if keywords was used in the request
+   if(keywords) {
+      sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
+   }
    NewsItem.count(filter).then(function(count) {
       if(count > 0) {
          if(page * pageSize - pageSize >= count) {
             page = Math.ceil(count / pageSize); //last page
          }
-         return NewsItem.find(filter)
-                 .sort({ publish: 1, publicationDate: -1, creationDate: -1, changedDate: -1 })
+         return NewsItem.find(filter, { score : { $meta: "textScore" } })
+                 .sort(sortOptions)
                  .skip(page * pageSize - pageSize)
                  .limit(pageSize)
                  .then(function(news) {

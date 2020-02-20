@@ -194,37 +194,12 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    //filter options
    var filter = { };
    var filterAnd = [];
-   var keywordsWords = [];
-   var keywordsRegex;
    var k;
-   var keywordsFilter = {};
-   var keywordsFilterClauses = [];
-   var keywordsDescriptionFieldFilter = {};
-   var keywordsTextFieldFilter = {};
-   var keywordsDescriptionFieldFilterClauses = [];
-   var keywordsTextFieldFilterClauses = [];
 
    filter['$and'] = filterAnd;
 
    if (keywords) {
-      keywordsWords = _.words(keywords);
-      if (keywordsWords && keywordsWords.length > 0) {
-         keywordsDescriptionFieldFilter['$and'] = keywordsDescriptionFieldFilterClauses;
-         keywordsTextFieldFilter['$and'] = keywordsTextFieldFilterClauses;
-         keywordsFilter['$or'] = keywordsFilterClauses;
-         keywordsFilterClauses.push(keywordsDescriptionFieldFilter);
-         keywordsFilterClauses.push(keywordsTextFieldFilter);
-         for (k = 0; k < keywordsWords.length && k < 20; k++) {
-            keywordsRegex = new RegExp(keywordsWords[k], "i");
-            keywordsDescriptionFieldFilterClauses.push({ description : { $regex : keywordsRegex } });
-         }
-         for (k = 0; k < keywordsWords.length && k < 20; k++) {
-            keywordsRegex = new RegExp(keywordsWords[k], "i");
-            keywordsTextFieldFilterClauses.push({ text : { $regex : keywordsRegex } });
-         }
-
-         filterAnd.push(keywordsFilter);
-      }
+      filterAnd.push({ '$text': { '$search' : "\"" + keywords + "\"" } });
    }
    if(number && number > 0) {
       filterAnd.push({ 'number': number });
@@ -291,7 +266,11 @@ module.exports.getLegislativePropositions = function(req, res, next) {
          if(page * pageSize - pageSize >= count) {
             page = Math.ceil(count / pageSize); //last page
          }
-         return LegislativeProposition.find(filter)
+         //set sort by text search score if keywords was used in the request
+         if(keywords) {
+            sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
+         }
+         return LegislativeProposition.find(filter, { score : { $meta: "textScore" }, highlight: { $meta: "searchHighlights" } })
                  .sort(sortOptions)
                  .skip(page * pageSize - pageSize)
                  .limit(pageSize)

@@ -78,6 +78,7 @@ var _createModelSchema = function(mongoose) {
    newsItemSchema.index({ publicationDate: 1 });
    newsItemSchema.index({ creationDate: 1 });
    newsItemSchema.index({ changedDate: 1 });
+   newsItemSchema.index({ title: 'text', headline: 'text', body: 'text' }, { default_language: "pt" });
 
    return newsItemSchema;
 }

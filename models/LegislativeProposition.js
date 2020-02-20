@@ -122,6 +122,8 @@ var _createModelSchema = function(mongoose) {
    legislativePropositionSchema.index({ changedDate: 1 , date: 1 , creationDate: 1 });
    legislativePropositionSchema.index({ type: 1 , creationDate: 1 });
 
+   legislativePropositionSchema.index({ description: 'text', text: 'text' }, { default_language: "pt" });
+
    return legislativePropositionSchema;
 }
 
