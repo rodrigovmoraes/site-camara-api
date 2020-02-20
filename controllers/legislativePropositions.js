@@ -214,11 +214,11 @@ module.exports.getLegislativePropositions = function(req, res, next) {
          keywordsFilter['$or'] = keywordsFilterClauses;
          keywordsFilterClauses.push(keywordsDescriptionFieldFilter);
          keywordsFilterClauses.push(keywordsTextFieldFilter);
-         for (k = 0; k < keywordsWords.length; k++) {
+         for (k = 0; k < keywordsWords.length && k < 20; k++) {
             keywordsRegex = new RegExp(keywordsWords[k], "i");
             keywordsDescriptionFieldFilterClauses.push({ description : { $regex : keywordsRegex } });
          }
-         for (k = 0; k < keywordsWords.length; k++) {
+         for (k = 0; k < keywordsWords.length && k < 20; k++) {
             keywordsRegex = new RegExp(keywordsWords[k], "i");
             keywordsTextFieldFilterClauses.push({ text : { $regex : keywordsRegex } });
          }

@@ -330,19 +330,42 @@ module.exports.getNews = function(req, res, next) {
    var filter = { };
    var filterAnd = [];
    filter['$and'] = filterAnd;
+   var keywordsFilter = {};
+   var keywordsFilterClauses = [];
+   var keywordsTitleFieldFilter = {};
+   var keywordsHeadlineFieldFilter = {};
+   var keywordsBodyFieldFilter = {};
+   var keywordsTitleFieldFilterClauses = [];
+   var keywordsHeadlineFieldFilterClauses = [];
+   var keywordsBodyFieldFilterClauses = [];
 
    var keywordsWords = [];
    var k;
 
    if (keywords) {
       keywordsWords = _.words(keywords);
-      if (keywordsWords) {
-         for (k = 0; k < keywordsWords.length; k++) {
+      if (keywordsWords && keywordsWords.length > 0) {
+         keywordsTitleFieldFilter['$and'] = keywordsTitleFieldFilterClauses;
+         keywordsHeadlineFieldFilter['$and'] = keywordsHeadlineFieldFilterClauses;
+         keywordsBodyFieldFilter['$and'] = keywordsBodyFieldFilterClauses;
+         keywordsFilter['$or'] = keywordsFilterClauses;
+         keywordsFilterClauses.push(keywordsTitleFieldFilter);
+         keywordsFilterClauses.push(keywordsHeadlineFieldFilter);
+         keywordsFilterClauses.push(keywordsBodyFieldFilter);
+         //limit keywords amount to 20
+         for (k = 0; k < keywordsWords.length && k < 20; k++) {
             keywordsRegex = new RegExp(keywordsWords[k], "i");
-            filterAnd.push({ '$or': [ { title : { $regex : keywordsRegex } },
-                                      { headline : { $regex : keywordsRegex } } ]
-                           });
+            keywordsTitleFieldFilterClauses.push({ title : { $regex : keywordsRegex } });
          }
+         for (k = 0; k < keywordsWords.length && k < 20; k++) {
+            keywordsRegex = new RegExp(keywordsWords[k], "i");
+            keywordsHeadlineFieldFilterClauses.push({ headline : { $regex : keywordsRegex } });
+         }
+         for (k = 0; k < keywordsWords.length && k < 20; k++) {
+            keywordsRegex = new RegExp(keywordsWords[k], "i");
+            keywordsBodyFieldFilterClauses.push({ body : { $regex : keywordsRegex } });
+         }
+         filterAnd.push(keywordsFilter);
       }
    }
 
