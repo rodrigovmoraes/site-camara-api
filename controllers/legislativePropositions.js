@@ -270,7 +270,7 @@ module.exports.getLegislativePropositions = function(req, res, next) {
          if(keywords) {
             sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
          }
-         return LegislativeProposition.find(filter, { score : { $meta: "textScore" }, highlight: { $meta: "searchHighlights" } })
+         return LegislativeProposition.find(filter, { score : { $meta: "textScore" } })
                  .sort(sortOptions)
                  .skip(page * pageSize - pageSize)
                  .limit(pageSize)
