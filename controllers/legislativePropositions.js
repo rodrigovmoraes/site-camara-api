@@ -199,7 +199,7 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    filter['$and'] = filterAnd;
 
    if (keywords) {
-      filterAnd.push({ '$text': { '$search' : "\"" + keywords + "\"" } });
+      filterAnd.push({ '$text': { '$search' : keywords } });
    }
    if(number && number > 0) {
       filterAnd.push({ 'number': number });

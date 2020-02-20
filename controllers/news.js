@@ -336,7 +336,7 @@ module.exports.getNews = function(req, res, next) {
    var k;
 
    if (keywords) {
-      filterAnd.push({ '$text': { '$search' : "\"" + keywords + "\"" } });
+      filterAnd.push({ '$text': { '$search' : keywords } });
    }
 
    if(date1) {
