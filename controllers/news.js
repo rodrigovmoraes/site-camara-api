@@ -374,12 +374,16 @@ module.exports.getNews = function(req, res, next) {
    if(req.query.id) {
       filter = { _id : NewsItemModule.getMongoose().Types.ObjectId(req.query.id) }
    }
+   //set sort by text search score if keywords was used in the request
+   if(keywords) {
+      sortOptions = _.merge(sortOptions, { score: { $meta : "textScore" } });
+   }
    NewsItem.count(filter).then(function(count) {
       if(count > 0) {
          if(page * pageSize - pageSize >= count) {
             page = Math.ceil(count / pageSize); //last page
          }
-         return NewsItem.find(filter)
+         return NewsItem.find(filter, { score : { $meta: "textScore" } })
                  .sort(sortOptions)
                  .skip(page * pageSize - pageSize)
                  .limit(pageSize)

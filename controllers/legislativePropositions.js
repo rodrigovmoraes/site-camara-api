@@ -266,7 +266,11 @@ module.exports.getLegislativePropositions = function(req, res, next) {
          if(page * pageSize - pageSize >= count) {
             page = Math.ceil(count / pageSize); //last page
          }
-         return LegislativeProposition.find(filter)
+         //set sort by text search score if keywords was used in the request
+         if (keywords) {
+            sortOptions = _.merge(sortOptions, { score: { $meta : "textScore" } });
+         }
+         return LegislativeProposition.find(filter, { score : { $meta: "textScore" } })
                  .sort(sortOptions)
                  .skip(page * pageSize - pageSize)
                  .limit(pageSize)
