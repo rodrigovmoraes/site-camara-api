@@ -376,7 +376,7 @@ module.exports.getNews = function(req, res, next) {
    }
    //set sort by text search score if keywords was used in the request
    if(keywords) {
-      sortOptions = _.merge(sortOptions, { score: { $meta : "textScore" } });
+      sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
    }
    NewsItem.count(filter).then(function(count) {
       if(count > 0) {
