@@ -18,6 +18,7 @@ var LegislativePropositionRemovedModule = require('../models/LegislativeProposit
 var LegislativePropositionRemoved = LegislativePropositionRemovedModule.getModel();
 var Utils = require('../util/Utils.js');
 var _ = require('lodash');
+var htmlToText = require('html-to-text');
 
 /*****************************************************************************
 ******************************* PRIVATE **************************************
@@ -59,7 +60,20 @@ module.exports.newLegislativeProposition = function(req, res, next) {
       winston.debug("Saving legislative proposition ...");
 
       legislativeProposition.save(function(err, legislativeProposition) {
-         if(!err) {
+         if (!err) {
+            //populate search field
+            try {
+               legislativeProposition.textSearch = htmlToText.fromString( ( legislativeProposition.description ? legislativeProposition.description : "" ) + " " + ( legislativeProposition.text ? legislativeProposition.text : "" ) + " " + ( legislativeProposition.textAttachment ? legislativeProposition.textAttachment : "" ), {
+                  ignoreHref: true,
+                  ignoreImage: true,
+                  preserveNewlines: false
+               });
+               legislativeProposition.textSearch = legislativeProposition.textSearch ? legislativeProposition.textSearch.toLowerCase() : "";
+               legislativeProposition.textSearch = legislativeProposition.textSearch ? legislativeProposition.textSearch.replace(/\n/g, " ") : "";
+               legislativeProposition.save();
+            } catch(e) {
+               winston.verbose("Error while extracting text from legislative proposition item for searching purposes, err = [%s]", e);
+            }
             winston.verbose("LegislativeProposition saved.");
             Utils.sendJSONresponse(res, 200, { message: 'legislative proposition saved',
                                                id: legislativeProposition._id });
@@ -103,7 +117,20 @@ module.exports.editLegislativeProposition = function(req, res, next) {
             winston.debug("Saving legislative proposition ...");
 
             legislativeProposition.save(function(err, savedLegislativeProposition) {
-               if(!err) {
+               if (!err) {
+                  //populate search field
+                  try {
+                     savedLegislativeProposition.textSearch = htmlToText.fromString( ( savedLegislativeProposition.description ? savedLegislativeProposition.description : "" ) + " " + ( savedLegislativeProposition.text ? savedLegislativeProposition.text : "" ) + " " + ( savedLegislativeProposition.textAttachment ? savedLegislativeProposition.textAttachment : "" ), {
+                        ignoreHref: true,
+                        ignoreImage: true,
+                        preserveNewlines: false
+                     });
+                     savedLegislativeProposition.textSearch = savedLegislativeProposition.textSearch ? savedLegislativeProposition.textSearch.toLowerCase() : "";
+                     savedLegislativeProposition.textSearch = savedLegislativeProposition.textSearch ? savedLegislativeProposition.textSearch.replace(/\n/g, " ") : "";
+                     savedLegislativeProposition.save();
+                  } catch(e) {
+                     winston.verbose("Error while extracting text from legislative proposition for searching purposes, err = [%s]", e);
+                  }
                   winston.verbose("LegislativeProposition saved.");
                   Utils.sendJSONresponse(res, 200, { message: 'legislative proposition saved', id: legislativeProposition._id });
                } else {
@@ -188,6 +215,8 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    var sortField = req.query.sort ?  req.query.sort : null;
    var sortDirection = req.query.sortDirection ?  req.query.sortDirection : 1;
    var sortOptions = { date: -1,
+                       year: -1,
+                       number: -1,
                        creationDate: -1,
                        changedDate: -1 }
 
@@ -201,31 +230,34 @@ module.exports.getLegislativePropositions = function(req, res, next) {
    if (keywords) {
       filterAnd.push({ '$text': { '$search' : keywords } });
    }
-   if(number && number > 0) {
+   if (number && number > 0) {
       filterAnd.push({ 'number': number });
    }
-   if(year && year > 0) {
+   if (year && year > 0) {
       filterAnd.push({ 'year': year });
    }
-   if(date1) {
+   if (date1) {
       filterAnd.push({ 'date': { '$gte' : date1 } });
    }
-   if(date2) {
+   if (date2) {
       filterAnd.push({ 'date': { '$lte' : date2 } });
    }
-   if(type) {
+   if (type) {
       filterAnd.push({ 'type' : LegislativePropositionTypeModule.getMongoose().Types.ObjectId(type) });
    }
-   if(tag) {
+   if (tag) {
       filterAnd.push({ 'tags' : { "$in" : [ LegislativePropositionTagModule.getMongoose().Types.ObjectId(tag) ]} });
    }
    //set sort options
-   if(sortField) {
+   if (sortField) {
       if(sortField === 'number') {
-         sortOptions = { 'number': sortDirection,
+         sortOptions = { 'year': sortDirection,
+                         'number': sortDirection,
                          'creationDate': sortDirection };
       } else if(sortField === 'date') {
          sortOptions = { 'date': sortDirection,
+                         'year': sortDirection,
+                         'number': sortDirection,
                          'creationDate': sortDirection,
                          'changedDate': sortDirection };
       } else if(sortField === 'changedDate') {
@@ -234,19 +266,21 @@ module.exports.getLegislativePropositions = function(req, res, next) {
                          'creationDate': sortDirection };
       } else if(sortField === 'type') {
          sortOptions = { 'type': sortDirection,
+                         'year': sortDirection,
+                         'number': sortDirection,
                          'creationDate': sortDirection };
       }
    }
 
    //if there is just one statement, then remove the "and" clausule
-   if(filterAnd.length === 0) {
+   if (filterAnd.length === 0) {
       filter = { };
    } else if(filterAnd.length === 1) {
       filter = filterAnd[0];
    }
 
    //id filter
-   if(req.query.id) {
+   if (req.query.id) {
       filter = { _id : LegislativePropositionModule.getMongoose().Types.ObjectId(req.query.id) }
    }
 
@@ -263,12 +297,23 @@ module.exports.getLegislativePropositions = function(req, res, next) {
       return LegislativeProposition.count(filter);
    }).then(function(count) {
       if(count > 0) {
+         //if the keywords was used in the search, limit the result to just 100 pages
+         //in order to avoid memory issues
+         if (keywords) {
+            if (count > 100 * pageSize) {
+               count = 100 * pageSize;
+            }
+         }
          if(page * pageSize - pageSize >= count) {
             page = Math.ceil(count / pageSize); //last page
          }
          //set sort by text search score if keywords was used in the request
+         var beetwenQuotesRegex = new RegExp("^\".*\"$", 'i');
          if (keywords) {
-            sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
+           //sort by text score just if keywords isn't beetween quotes
+           if (!beetwenQuotesRegex.test(keywords)) {
+             sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
+           }
          }
          return LegislativeProposition.find(filter, { score : { $meta: "textScore" } })
                  .sort(sortOptions)

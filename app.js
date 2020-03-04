@@ -146,8 +146,8 @@ DbModule.connect(function(mongoose, connection) {
 ********************* MIDDLEWARES CONFIG SECTION *****************************
 ******************************************************************************/
 app.use(httpLog);
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({ limit: camaraApiConfig.requestSizeLimit, extended: true }));
+app.use(bodyParser.urlencoded({ limit: camaraApiConfig.requestSizeLimit, extended: false }));
 //set Cross Origin Resource Sharing (CORS)
 //see: http://restlet.com/company/blog/2015/12/15/understanding-and-using-cors/
 app.use(cors());

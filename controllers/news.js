@@ -11,6 +11,7 @@ var Minio = require('minio');
 var config = require('config');
 var kue = require('kue');
 var uuidModule = require('uuid');
+var htmlToText = require('html-to-text');
 
 /*****************************************************************************
 ******************************* PRIVATE **************************************
@@ -45,7 +46,21 @@ module.exports.newNewsItem = function(req, res, next) {
       winston.debug("Saving news item ...");
 
       newsItem.save(function(err, newsItem) {
+         //return the response
          if(!err) {
+           //populate search field
+           try {
+              newsItem.textSearch = htmlToText.fromString(( newsItem.title ? newsItem.title : "" ) + " " + ( newsItem.headline ? newsItem.headline : "" ) + " " + ( newsItem.body ? newsItem.body : "" ), {
+                 ignoreHref: true,
+                 ignoreImage: true,
+                 preserveNewlines: false
+              });
+              newsItem.textSearch = newsItem.textSearch ? newsItem.textSearch.toLowerCase() : "";
+              newsItem.textSearch = newsItem.textSearch ? newsItem.textSearch.replace(/\n/g, " ") : "";
+              newsItem.save();
+           } catch (e) {
+              winston.verbose("Error while extracting text from news item for searching purposes, err = [%s]", e);
+           }
             winston.verbose("News item saved.");
             Utils.sendJSONresponse(res, 200, { message: 'news item saved', id: newsItem._id });
          } else {
@@ -82,7 +97,20 @@ module.exports.editNewsItem = function(req, res, next) {
             winston.debug("Saving news item ...");
 
             newsItem.save(function(err, newsItem) {
-               if(!err) {
+               if (!err) {
+                  //populate search field
+                  try {
+                    newsItem.textSearch = htmlToText.fromString(( newsItem.title ? newsItem.title : "" ) + " " + ( newsItem.headline ? newsItem.headline : "" ) + " " + ( newsItem.body ? newsItem.body : "" ), {
+                       ignoreHref: true,
+                       ignoreImage: true,
+                       preserveNewlines: false
+                    });
+                    newsItem.textSearch = newsItem.textSearch ? newsItem.textSearch.toLowerCase() : "";
+                    newsItem.textSearch = newsItem.textSearch ? newsItem.textSearch.replace(/\n/g, " ") : "";
+                    newsItem.save();
+                  } catch(e) {
+                    winston.verbose("Error while extracting text from news item for searching purposes, err = [%s]", e);
+                  }
                   winston.verbose("News item saved.");
                   Utils.sendJSONresponse(res, 200, { message: 'news item saved', id: newsItem._id });
                } else {
@@ -375,12 +403,23 @@ module.exports.getNews = function(req, res, next) {
       filter = { _id : NewsItemModule.getMongoose().Types.ObjectId(req.query.id) }
    }
    //set sort by text search score if keywords was used in the request
-   if(keywords) {
-      sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
+   var beetwenQuotesRegex = new RegExp("^\".*\"$", 'i');
+   if (keywords) {
+      //sort by text score just if keywords isn't beetween quotes
+      if (!beetwenQuotesRegex.test(keywords)) {
+        sortOptions = _.merge({ score: { $meta : "textScore" } }, sortOptions);
+      }
    }
    NewsItem.count(filter).then(function(count) {
       if(count > 0) {
-         if(page * pageSize - pageSize >= count) {
+         //if the keywords was used in the search, limit the result to just 100 pages
+         //in order to avoid memory issues
+         if (keywords) {
+            if (count > 100 * pageSize) {
+               count = 100 * pageSize;
+            }
+         }
+         if (page * pageSize - pageSize >= count) {
             page = Math.ceil(count / pageSize); //last page
          }
          return NewsItem.find(filter, { score : { $meta: "textScore" } })

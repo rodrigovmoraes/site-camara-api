@@ -50,6 +50,11 @@ var _createModelSchema = function(mongoose) {
         type: String,
         contentType: String
      },
+     textSearch: {
+        type: String,
+        contentType: String,
+        required: false
+     },
      creationDate: {
         type: Date,
         required: true,
@@ -111,18 +116,19 @@ var _createModelSchema = function(mongoose) {
    });
    // number/type must be unique
    legislativePropositionSchema.index({ type: 1, number: 1 }, { unique: true });
+   legislativePropositionSchema.index({ year: 1 });
    legislativePropositionSchema.index({ number: 1 });
    legislativePropositionSchema.index({ creationDate: 1 });
    legislativePropositionSchema.index({ date: 1 });
    legislativePropositionSchema.index({ changedDate: 1 });
    legislativePropositionSchema.index({ type: 1 });
 
-   legislativePropositionSchema.index({ number: 1 , creationDate: 1 });
-   legislativePropositionSchema.index({ date: 1 , creationDate: 1 , changedDate: 1 });
+   legislativePropositionSchema.index({ year: 1, number: 1 , creationDate: 1 });
+   legislativePropositionSchema.index({ date: 1 , year: 1, number: 1, creationDate: 1 , changedDate: 1 });
    legislativePropositionSchema.index({ changedDate: 1 , date: 1 , creationDate: 1 });
-   legislativePropositionSchema.index({ type: 1 , creationDate: 1 });
+   legislativePropositionSchema.index({ type: 1 , year: 1, number: 1, creationDate: 1 });
 
-   legislativePropositionSchema.index({ description: 'text', text: 'text' }, { default_language: "pt" });
+   legislativePropositionSchema.index({ textSearch: 'text' }, { default_language: "pt" });
 
    return legislativePropositionSchema;
 }

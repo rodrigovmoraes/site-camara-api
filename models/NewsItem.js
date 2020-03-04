@@ -59,6 +59,11 @@ var _createModelSchema = function(mongoose) {
         type: String,
         contentType: String
      },
+     textSearch: {
+        type: String,
+        contentType: String,
+        required: false
+     },
      enableFacebookShareButton: {
         type: Boolean,
         required: false,
@@ -78,7 +83,7 @@ var _createModelSchema = function(mongoose) {
    newsItemSchema.index({ publicationDate: 1 });
    newsItemSchema.index({ creationDate: 1 });
    newsItemSchema.index({ changedDate: 1 });
-   newsItemSchema.index({ title: 'text', headline: 'text', body: 'text' }, { default_language: "pt" });
+   newsItemSchema.index({ textSearch: 'text' }, { default_language: "pt" });
 
    return newsItemSchema;
 }
