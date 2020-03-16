@@ -9,7 +9,7 @@ var config = require('config');
 ********************************** CONFIG ************************************
 ******************************************************************************/
 var camaraApiConfig = config.get("CamaraApi");
-var queue = require('../jobs.js');
+var jobs = require('../jobs.js');
 
 /*****************************************************************************
 *********************************** PRIVATE ***********************************
@@ -17,9 +17,6 @@ var queue = require('../jobs.js');
 var _validateQueue = function(pqueue, callback) {
    if(!pqueue) {
       callback({ message: 'Queue jobs was not created.' });
-      return false;
-   } else if(!pqueue.client.connected) {
-      callback({ message: 'Queue jobs is not connected to Redis.' });
       return false;
    } else {
       return true;
@@ -30,6 +27,7 @@ var _validateQueue = function(pqueue, callback) {
 *********************************** BEGIN ************************************
 ******************************************************************************/
 module.exports.resizeImage = function(s3Path, width, height, callback) {
+   var queue = jobs.getQueue();
    if(!_validateQueue(queue, callback)) {
       return;
    }

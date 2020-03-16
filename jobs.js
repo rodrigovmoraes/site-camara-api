@@ -7,13 +7,13 @@ var config = require('config');
 var kue = require('kue');
 var Minio = require('minio');
 var Jimp = require('jimp');
+var cluster = require('cluster')
 
 /*****************************************************************************
 *********************************** PRIVATE **********************************
 ******************************************************************************/
 var _queue = null;
 var _camaraApiConfig = config.get("CamaraApi");
-var _initialized = false;
 
 /*****************************************************************************
 ************************************ JOBS ************************************
@@ -61,7 +61,7 @@ var _imageProcessingResizeJob = function(job, done) {
                                             image.getMIME(),
                         function(err, etag) {
                           if(!err) {
-                             winston.debug("Resized image sent to S3 server, s3Path = [%s]", s3Path);
+                             winston.debug("Resized image sent to S3 server, s3Path = [%s], masterCluster = [%s]", s3Path, cluster.isMaster ? 'yes': 'no');
                              done();
                           } else {
                              winston.error("Error while sending resized image to S3 server, err = [%s]", err);
@@ -104,11 +104,26 @@ var _setupQueue = function(pqueue) {
 };
 
 /*****************************************************************************
+************************************* GET QUEUE*******************************
+******************************************************************************/
+var _getQueue = function() {
+   var rqueue = null;
+   try {
+      rqueue = kue.createQueue( {
+         prefix: _camaraApiConfig.Kue.prefix,
+         redis: _camaraApiConfig.Kue.Redis
+      });
+   } catch(err) {
+      winston.error("Error while getting queue jobs, err=[%s]", err);
+   }
+   return rqueue;
+};
+
+
+/*****************************************************************************
 ********************************** CONFIG ************************************
 ******************************************************************************/
-if(!_initialized) {
-   _initialized = true;
-
+if (process.env.START_QUEUE_JOBS && process.env.START_QUEUE_JOBS.toLowerCase() === 'yes') {
    //log configuration
    winston.setLevels(_camaraApiConfig.Log.levels);
    winston.addColors(_camaraApiConfig.Log.levelsColors);
@@ -132,6 +147,6 @@ if(!_initialized) {
    if(_queue) {
       _setupQueue(_queue);
    }
-}//END - if(initialized)
+}//END - initialized
 
-module.exports = _queue;
+module.exports.getQueue = _getQueue;

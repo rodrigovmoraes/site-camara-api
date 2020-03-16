@@ -32,7 +32,9 @@ if(cluster.isMaster) {
    //config and start socket io server
    var io = require('../socket-io.js')(server);
 
-   cluster.fork();
+   cluster.fork({
+      START_QUEUE_JOBS: 'YES'
+   });
 } else {
    //JOB PROCESSOR START
    winston.info('Starting JOBs processor ...');

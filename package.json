@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node -r dotenv/config ./bin/www",
-    "start-debug": "node -r dotenv/config --inspect-brk ./bin/www",
+    "start-debug": "node -r dotenv/config --inspect ./bin/www",
     "test": "./node_modules/.bin/mocha --recursive --reporter spec",
     "test-debug": "./node_modules/.bin/mocha --recursive --debug-brk",
     "migratePhase01": "node -r dotenv/config ./migration/migratePhase01",
