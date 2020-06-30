@@ -6,6 +6,9 @@ var winston = require('winston');
 var config = require('config');
 var Utils = require('../util/Utils.js');
 var _requestService = require('request-promise');
+const { GoogleToken } = require('gtoken');
+var gtoken = null;
+var calendarAccessToken = null;
 
 /*****************************************************************************
 ********************************** CONFIG ************************************
@@ -17,6 +20,24 @@ var weekdayDescriptions = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 /*****************************************************************************
 *********************************** PRIVATE ***********************************
 ******************************************************************************/
+var _getToken = async function() {
+   if (!gtoken) {
+      gtoken = new GoogleToken({
+         keyFile: './portal-cms-google-calendar-auth.json', // or path to .p12 key file
+         scope: ['https://www.googleapis.com/auth/calendar.readonly'] // or space-delimited string of scopes
+      });
+   }
+   await gtoken.getToken();
+   if (gtoken.hasExpired()) {
+      gtoken = new GoogleToken({
+         keyFile: './portal-cms-google-calendar-auth.json', // or path to .p12 key file
+         scope: ['https://www.googleapis.com/auth/calendar.readonly'] // or space-delimited string of scopes
+      });
+      await gtoken.getToken();
+   }
+   return gtoken.accessToken;
+}
+
 var _extractAllDay = function(dateField) {
       if (dateField.date) {
          return true;
@@ -131,17 +152,19 @@ var _extractResult = function(resultItem, isFullCalendarFormat) {
       }
 }
 
-var _getEvents = function (pageToken, isFullCalendarFormat) {
+var _getEvents = async function (pageToken, isFullCalendarFormat) {
    var url = googleCalendarConfig.baseUrl + googleCalendarConfig.listEventsMethod.replace("{calendarId}", googleCalendarConfig.calendarId);
-
+   var token = await _getToken();
    return _requestService({
       'url': url,
       method: "GET",
       json: true,
       qs: {
-         key: googleCalendarConfig.apiKey,
          calendarId: googleCalendarConfig.calendarId,
          'pageToken': pageToken
+      },
+      headers: {
+        'Authorization': 'Bearer ' + token
       }
    }).then(function(result) {
       //get the first page
@@ -165,11 +188,10 @@ var _getEvents = function (pageToken, isFullCalendarFormat) {
 /*****************************************************************************
 **************************  Module functions *********************************
 /*****************************************************************************/
-module.exports.getEvents = function(minDate, maxDate, fullCalendarFormat) {
+module.exports.getEvents = async function(minDate, maxDate, fullCalendarFormat) {
    var isFullCalendarFormat = fullCalendarFormat ? fullCalendarFormat : false;
    var url = googleCalendarConfig.baseUrl + googleCalendarConfig.listEventsMethod.replace("{calendarId}", googleCalendarConfig.calendarId);
    var qs = {
-      key: googleCalendarConfig.apiKey,
       timeZone: googleCalendarConfig.timeZone,
       calendarId: googleCalendarConfig.calendarId,
       singleEvents: true,
@@ -182,12 +204,16 @@ module.exports.getEvents = function(minDate, maxDate, fullCalendarFormat) {
    if(maxDate) {
       qs['timeMax'] = maxDate;
    }
+   var token = await _getToken();
    //make the http request
    return _requestService({
       'url': url,
       method: "GET",
       json: true,
-      'qs': qs
+      'qs': qs,
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
    }).then(async function(result) {
       //get the first page
       var events = [];
@@ -216,7 +242,7 @@ module.exports.getEvents = function(minDate, maxDate, fullCalendarFormat) {
    });
 }
 
-module.exports.getEvent = function(eventId, fullCalendarFormat) {
+module.exports.getEvent = async function(eventId, fullCalendarFormat) {
    var isFullCalendarFormat = fullCalendarFormat ? fullCalendarFormat : false;
    var url = googleCalendarConfig.baseUrl +
                googleCalendarConfig
@@ -228,12 +254,16 @@ module.exports.getEvent = function(eventId, fullCalendarFormat) {
       timeZone: googleCalendarConfig.timeZone,
       calendarId: googleCalendarConfig.calendarId
    };
+   var token = await _getToken();
    //make the http request
    return _requestService({
       'url': url,
       method: "GET",
       json: true,
-      'qs': qs
+      'qs': qs,
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
    }).then(async function(event) {
       if(event) {
          return _extractResult(event, isFullCalendarFormat);

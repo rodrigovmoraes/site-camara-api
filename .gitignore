@@ -1,5 +1,7 @@
+portal-cms-google-calendar-auth.json
 node_modules/**
 config/**
 .env
+
 
 
