@@ -152,18 +152,16 @@ var _extractResult = function(resultItem, isFullCalendarFormat) {
       }
 }
 
-var _getEvents = async function (pageToken, isFullCalendarFormat) {
+var _getEvents = async function (qs, pageToken, isFullCalendarFormat) {
    var url = googleCalendarConfig.baseUrl + googleCalendarConfig.listEventsMethod.replace("{calendarId}", googleCalendarConfig.calendarId);
    var token = await _getToken();
+   qs['pageToken'] = pageToken;
    return _requestService({
       'url': url,
-      method: "GET",
-      json: true,
-      qs: {
-         calendarId: googleCalendarConfig.calendarId,
-         'pageToken': pageToken
-      },
-      headers: {
+      'method': "GET",
+      'json': true,
+      'qs': qs,
+      'headers': {
         'Authorization': 'Bearer ' + token
       }
    }).then(function(result) {
@@ -227,7 +225,7 @@ module.exports.getEvents = async function(minDate, maxDate, fullCalendarFormat) 
          //get next pages
          var next = result ? result.nextPageToken : null;
          while(next) {
-            var result = await _getEvents(next);
+            var result = await _getEvents(qs, next);
             next = result.nextPageToken;
             var i;
             for(i = 0; i < result.items.length; i++) {
