@@ -63,7 +63,13 @@ var _createModelSchema = function(mongoose) {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'LicitacaoEvent',
         required: true
-     }]
+     }],
+     covid: {
+        type: Boolean,
+        required: false,
+        unique: false,
+        default: false
+     }
    });
    // number/year must be unique
    licitacaoSchema.index({ year: 1, number: 1, category: 1 }, { unique: true });

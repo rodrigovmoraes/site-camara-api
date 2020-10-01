@@ -34,6 +34,7 @@ module.exports.newLicitacao = function(req, res, next) {
       licitacao.description = licitacaoJSON.description;
       licitacao.creationDate = new Date();
       licitacao.changedDate = null;
+      licitacao.covid = false;
       if(licitacaoJSON.publish) {
          licitacao.state = 1; //published
          licitacao.publicationDate = new Date();
@@ -69,6 +70,7 @@ module.exports.editLicitacao = function(req, res, next) {
          if(licitacao) {
             var now = new Date();
             licitacao.description = licitacaoJSON.description;
+            licitacao.covid = licitacaoJSON.covid;
             licitacao.changedDate = now;
 
             winston.debug("Saving licitacao ...");
@@ -271,7 +273,8 @@ module.exports.getLicitacoes = function(req, res, next) {
                                'categoryId' : licitacao.category,
                                'categoryDescription' : categoriesMap[licitacao.category] ? categoriesMap[licitacao.category] : '',
                                'state' : licitacao.state,
-                               'stateDescription' : stateDescriptionMap[licitacao.state] ? stateDescriptionMap[licitacao.state] : ''
+                               'stateDescription' : stateDescriptionMap[licitacao.state] ? stateDescriptionMap[licitacao.state] : '',
+                               'covid':  licitacao.covid
                             });
                          }
                       }

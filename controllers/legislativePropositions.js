@@ -18,6 +18,7 @@ var LegislativePropositionRemovedModule = require('../models/LegislativeProposit
 var LegislativePropositionRemoved = LegislativePropositionRemovedModule.getModel();
 var LegislativePropositionRelationshipTypeModule = require('../models/LegislativePropositionRelationshipType.js');
 var LegislativePropositionRelationshipType = LegislativePropositionRelationshipTypeModule.getModel();
+var LegislativePropositionRelationshipsService = require('../services/LegislativePropositionRelationshipsService.js')
 var Utils = require('../util/Utils.js');
 var _ = require('lodash');
 var htmlToText = require('html-to-text');
@@ -25,80 +26,9 @@ var htmlToText = require('html-to-text');
 /*****************************************************************************
 ******************************* PRIVATE **************************************
 /*****************************************************************************/
-//check if a relationship in databse (oldRelationship)
-//is equals to a relationship in JSON format (newRelationship)
-var _checkRelationshipsEquals = function (oldRelationship, newRelationship) {
-   return oldRelationship.type &&
-          oldRelationship.otherLegislativeProposition &&
-          newRelationship.type === oldRelationship.type.toString() &&
-          newRelationship.otherLegislativeProposition === oldRelationship.otherLegislativeProposition.toString();
-}
-
-//compare the list of relationships in database with the list of relationships
-//in JSON format and return the difference
-var _calcReallyNewRelationships = function(oldRelationships, newRelationships) {
-   //order
-   var soldRelationships = _.orderBy(oldRelationships, ['type', 'otherLegislativeProposition']);
-   var snewRelationships = _.orderBy(newRelationships, ['type', 'otherLegislativeProposition']);
-   var reallyNewRelationships = [];
-   var i, j, found;
-
-   for (j = 0; j < snewRelationships.length; j++) {
-      snewRelationships[j].found = false;
-   }
-
-   for (i = 0; i < soldRelationships.length; i++) {
-      found = false;
-      for (j = 0; j < snewRelationships.length && !found; j++) {
-         if (_checkRelationshipsEquals(soldRelationships[i], snewRelationships[j])) {
-            found = true;
-            snewRelationships[j].found = true;
-         }
-      }
-   }
-
-   for (j = 0; j < snewRelationships.length; j++) {
-      if (!snewRelationships[j].found) {
-         delete snewRelationships[j].found;
-         reallyNewRelationships.push(snewRelationships[j]);
-      }
-   }
-
-   return reallyNewRelationships;
-}
-
-//save the reverse relationships of legislative proposition
-var _saveReverseRelationships = async function (legislativePropositionId, reallyNewRelationships) {
-   //return a promise to process a relationship in the array
-   //reallyNewRelationships
-   var _getSaveReverseRelationshipPromise = function(relationship, lpId) {
-      return LegislativeProposition
-               .findById({ _id: relationship.otherLegislativeProposition })
-               .then(function(legislativeProposition) {
-                  return LegislativePropositionRelationshipType
-                                    .findById({ _id:relationship.type })
-                                    .then(function(legislativePropositionRelationshipType) {
-                                       legislativeProposition.relationships.push({
-                                          type: legislativePropositionRelationshipType.antonym,
-                                          otherLegislativeProposition: lpId
-                                       });
-                                       return legislativeProposition.save();
-                                    });
-               });
-   }
-   var i;
-   var p = [];
-   if (reallyNewRelationships) {
-      //array of process in order to process the items in
-      //reallyNewRelationships
-      for (i = 0; i < reallyNewRelationships.length; i++) {
-         p.push(_getSaveReverseRelationshipPromise(reallyNewRelationships[i], legislativePropositionId));
-      }
-      return Promise.all(p);
-   } else {
-      return Promise.resolve(true);
-   }
-}
+//...
+//..
+//.
 
 /*****************************************************************************
 ******************************* PUBLIC ***************************************
@@ -165,6 +95,7 @@ module.exports.newLegislativeProposition = function(req, res, next) {
 
 module.exports.editLegislativeProposition = function(req, res, next) {
    var reallyNewRelationships = [];
+   var reallyRemovedRelationships = [];
    if(!req.payload) {
       Utils.sendJSONresponse(res, 403, { message: 'you must be logged in' });
    } else if(req.body.legislativeProposition) {
@@ -184,7 +115,8 @@ module.exports.editLegislativeProposition = function(req, res, next) {
             legislativeProposition.consolidatedText = legislativePropositionJSON.consolidatedText;
             legislativeProposition.consolidatedTextAttachment = legislativePropositionJSON.consolidatedTextAttachment;
             legislativeProposition.legislativeProcessId = legislativePropositionJSON.legislativeProcessId ? legislativePropositionJSON.legislativeProcessId : null;
-            reallyNewRelationships = _calcReallyNewRelationships(legislativeProposition.relationships, legislativePropositionJSON.relationships);
+            reallyNewRelationships = LegislativePropositionRelationshipsService.calcDiffRelationships(legislativePropositionJSON.relationships, legislativeProposition.relationships);
+            reallyRemovedRelationships = LegislativePropositionRelationshipsService.calcDiffRelationships(legislativeProposition.relationships, legislativePropositionJSON.relationships);
             legislativeProposition.relationships = legislativePropositionJSON.relationships;
             legislativeProposition.fileAttachments = legislativePropositionJSON.fileAttachments;
             legislativeProposition.consolidatedFileAttachments = legislativePropositionJSON.consolidatedFileAttachments;
@@ -194,7 +126,7 @@ module.exports.editLegislativeProposition = function(req, res, next) {
 
             winston.debug("Saving legislative proposition ...");
 
-            legislativeProposition.save(function(err, savedLegislativeProposition) {
+            legislativeProposition.save(async function(err, savedLegislativeProposition) {
                if (!err) {
                   //populate search field
                   try {
@@ -211,7 +143,11 @@ module.exports.editLegislativeProposition = function(req, res, next) {
                   }
                   //save reverse new relationships
                   if (reallyNewRelationships) {
-                     _saveReverseRelationships(savedLegislativeProposition._id, reallyNewRelationships);
+                     await LegislativePropositionRelationshipsService.addReverseRelationships(savedLegislativeProposition._id, reallyNewRelationships);
+                  }
+                  //save reverse removed relationships
+                  if (reallyRemovedRelationships) {
+                     await LegislativePropositionRelationshipsService.removeReverseRelationships(savedLegislativeProposition._id, reallyRemovedRelationships);
                   }
                   winston.verbose("LegislativeProposition saved.");
                   Utils.sendJSONresponse(res, 200, { message: 'legislative proposition saved', id: legislativeProposition._id });
