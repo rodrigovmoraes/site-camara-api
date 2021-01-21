@@ -51,7 +51,7 @@
     "passport-local": "^1.0.0",
     "request": "^2.81.0",
     "request-promise": "^4.2.2",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.4.0",
     "uuid": "^3.3.2",
     "winston": "^2.3.1"
   },
